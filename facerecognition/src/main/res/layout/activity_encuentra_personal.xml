@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    tools:context="org.opencv.cultoftheunicorn.marvel.EncuentraPersonal"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/txtnombre"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/txtdomicilio"
+        android:layout_alignTop="@+id/ivcustomlayout"
+        android:text="@string/Nombres"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="10sp"
+        android:textStyle="normal|bold" />
+
+    <ImageView
+        android:id="@+id/ivcustomlayout"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_alignBottom="@+id/txttelefono"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="20dp" />
+
+    <TextView
+        android:id="@+id/txtcodigo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/txtcodigoimss"
+        android:layout_below="@+id/txtnombre"
+        android:text="codigo"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/txtdomicilio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/txtcodigo"
+        android:layout_marginStart="15dp"
+        android:text="@string/Domicilio"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="10sp"
+        android:textStyle="normal|bold" />
+
+    <TextView
+        android:id="@+id/txtCiudad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/txtcodigo"
+        android:layout_marginTop="77dp"
+        android:text="ciudad"
+        android:textColor="?attr/colorAccent"
+        android:textSize="18sp"
+        android:textStyle="normal|bold" />
+
+    <TextView
+        android:id="@+id/txtcodigoimss"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/txtdomicilio"
+        android:layout_below="@+id/txtdomicilio"
+        android:text="imss"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/txttelefono"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/txtcodigo"
+        android:layout_below="@+id/txtCiudad"
+        android:text="telefono"
+        android:textAllCaps="true"
+        android:textColor="?attr/colorAccent"
+        android:textSize="24sp"
+        android:textStyle="normal|bold" />
+
+</RelativeLayout>
