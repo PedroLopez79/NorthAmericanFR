@@ -2,17 +2,24 @@ package cultoftheunicorn.marvel;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -31,12 +38,29 @@ import org.opencv.core.Size;
 import org.opencv.cultoftheunicorn.marvel.R;
 import org.opencv.objdetect.CascadeClassifier;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.http.util.EncodingUtils;
+import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+//import android.content.Context;
 
 public class Recognize extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -51,9 +75,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     private static final int frontCam =1;
     private static final int backCam =2;
 
-
     private int faceState=IDLE;
-
 
     private Mat                    mRgba;
     private Mat                    mGray;
@@ -68,6 +90,18 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     private int mLikely=999;
 
     String mPath="";
+
+    //--------------------------------------------------------------------------------------------//
+    public static final int SIGNATURE_ACTIVITY = 1;
+    String TAG2 = "Response";
+    String resultString;
+    String un,pass,db,ip,usuarioid, nombreusuario, numestacion;
+    String IMAGE1,IMAGE2,IMAGE3,IMAGE4,IMAGE5,IMAGE6,IMAGE7,IMAGE8,IMAGE9,IMAGE10;
+    String IMAGEDEFAULT1,IMAGEDEFAULT2,IMAGEDEFAULT3,IMAGEDEFAULT4,IMAGEDEFAULT5,IMAGEDEFAULT6,
+           IMAGEDEFAULT7,IMAGEDEFAULT8,IMAGEDEFAULT9,IMAGEDEFAULT10;
+    String NOMBRES;
+    String band = "Disable Scann";
+    //--------------------------------------------------------------------------------------------//
 
     private Tutorial3View   mOpenCvCameraView;
 
@@ -166,6 +200,43 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         }
     }
 
+    public void savebitmap(String bitmapfilename, String imagebase64) {
+        File file;
+        file = new File(mPath, bitmapfilename+".jpg");
+        try{
+            OutputStream stream = null;
+            stream = new FileOutputStream(file);
+            byte[] decodedString = Base64.decode(imagebase64, Base64.DEFAULT);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            decodedByte = getResizedBitmap(decodedByte, 128, 128);
+            decodedByte.compress(Bitmap.CompressFormat.JPEG,100,stream);
+
+            stream.flush();
+            stream.close();
+
+        }catch (IOException e) // Catch the exception
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(
+                bm, 0, 0, width, height, matrix, false);
+        bm.recycle();
+        return resizedBitmap;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -174,24 +245,31 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         scan = (ToggleButton) findViewById(R.id.scan);
         final TextView results = (TextView) findViewById(R.id.results);
 
-        mOpenCvCameraView = (Tutorial3View) findViewById(R.id.tutorial3_activity_java_surface_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
+        // Declaring Server ip, username, database name and password
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        ip = prefs.getString("ipservidor","IANSERVICES.DDNS.NET");
+        db = prefs.getString("dbservidor","AmericanGreenHouseCheck");
+        un = prefs.getString("usuarioservidor","sa");
+        pass = prefs.getString("passwordservidor","IAN32");
+        numestacion = prefs.getString("numeroestacion","2601");
 
         //mPath=getFilesDir()+"/facerecogOCV/";
         mPath = Environment.getExternalStorageDirectory()+"/facerecogOCV/";
+        //---------RUTINA DE LIMPIADO DE ARCHIVOS EN DIRECTORIO facerecogOCV----------------------//
+        deleteRecursive(mPath);
+
+        //---------RUTINA PARA GENERAR LOS ARCHIVO JPG, 10 imagenes default- 10 imagens sujeto a autenticar//
+        ObtenRostros obtenrostros = new ObtenRostros();// this is the Asynctask, which is used to process in background to reduce load on app process
+        obtenrostros.execute("");
+
+        mOpenCvCameraView = (Tutorial3View) findViewById(R.id.tutorial3_activity_java_surface_view);
+        mOpenCvCameraView.setCvCameraViewListener(this);
 
         Log.e("Path", mPath);
 
+        //-------------------------POSICION ORIGINAL DE LABELSFILE--------------------------------//
         labelsFile= new Labels(mPath);
-
-        //---------RUTINA DE LIMPIADO DE ARCHIVOS EN DIRECTORIO facerecogOCV----------------------//
-        //deleteRecursive(mPath);
-
-        //---------CREA ARCHIVO faces.txt agregar labels------------------------------------------//
-        //labelsFile.add("ejemplo 1", 1);
-        //labelsFile.add("ejemplo 2", 2);
-        //labelsFile.Save();
-        //----------------------------------------------------------------------------------------//
+        //-------------------------------------------------------------------------------------------------//
 
         mHandler = new Handler() {
             @Override
@@ -199,6 +277,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                 /*
                     display a newline separated list of individual names
                  */
+                uniqueNames.clear();
                 String tempName = msg.obj.toString();
                 if (!(tempName.equals("Unknown"))) {
                     tempName = capitalize(tempName);
@@ -258,6 +337,280 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             }
         });
 
+    }
+
+    public String conectar(String idemp) {
+        String SOAP_ACTION = "urn:androidserviceIntf-Iandroidservice#obtenRostros10";
+        String METHOD_NAME = "obtenRostros10";
+        String NAMESPACE = "urn:androidserviceIntf";
+        String URL = "http://"+ip+":1001/soap/Iandroidservice";
+        String z;
+
+        String nombre;
+        boolean isSuccess;
+
+        //----FECHA ACTUAL------------------------------------------------------------------------//
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
+        String fecha = dateFormat.format(date);
+        //-----variable para imagen base64--------------------------------------------------------//
+        String encodedImage2;
+        byte[] byteArray;
+        Bitmap image = null;
+        //----------------------------------------------------------------------------------------//
+
+        nombre = getIntent().getStringExtra("name");
+        try {
+            SoapObject Request = new SoapObject(NAMESPACE, METHOD_NAME);
+            Request.addProperty("idemp", idemp);
+            //---------------------obtener las 10 imagenes ya capturadas--------------------------//
+            encodedImage2 = "";
+            //------------------------------------------------------------------------------------//
+
+            SoapSerializationEnvelope soapEnvelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            soapEnvelope.dotNet = true;
+            soapEnvelope.setOutputSoapObject(Request);
+            HttpTransportSE transport = new HttpTransportSE(URL, 80000);
+
+            transport.call(SOAP_ACTION, soapEnvelope);
+
+            //resultString = (SoapPrimitive) soapEnvelope.getResponse();
+            Object  response = (Object) soapEnvelope.getResponse();
+            resultString = response.toString();
+
+            return resultString;
+
+            //Log.i(TAG, "Result Celsius: " + resultString);
+        } catch (Exception ex) {
+            Log.e(TAG2, "Error: " + ex.getMessage());
+        }
+        return SOAP_ACTION;
+    }
+
+    public class ObtenRostros extends AsyncTask<String,String,String>
+    {
+        String z = "";
+        Boolean isSuccess = false;
+
+        @Override
+        protected void onPreExecute()
+        {
+            /*progressBar.setVisibility(View.VISIBLE);*/
+        }
+
+        @Override
+        protected void onPostExecute(String r)
+        {
+            //progressBar.setVisibility(View.GONE);
+            Toast.makeText(Recognize.this, r, Toast.LENGTH_SHORT).show();
+            if(isSuccess)
+            {
+                Toast.makeText(Recognize.this , "Login Exitoso" , Toast.LENGTH_LONG).show();
+                if (band.equals("EnableScann"))
+                {
+                    scan.setEnabled(true);
+                }
+            }
+            if(!isSuccess)
+            {
+                Toast.makeText(Recognize.this , "Usuario o Clave incorrecta" , Toast.LENGTH_LONG).show();
+                if (band.equals("EnableScann"))
+                {
+                    scan.setEnabled(true);
+                }
+            }
+        }
+        @Override
+        protected String doInBackground(String... params)
+        {
+            Intent intent = getIntent();
+            String idempleado = intent.getStringExtra("IDEMPLEADO");
+
+            resultString = conectar(idempleado);
+
+            if (!resultString.equals("")){
+                /*---------------------GUARDAR ROSTROS 10 IMAGENES JPG----------------------------*/
+                String datosempleados = resultString;
+
+                if (!datosempleados.trim().equals("")) {
+
+                    try {
+
+                        String substr = datosempleados.substring(0, datosempleados.indexOf("<"));
+                        datosempleados = datosempleados.substring(datosempleados.indexOf("<"));
+                        int i = Integer.parseInt(substr);
+
+                        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                        factory.setNamespaceAware(true);
+                        XmlPullParser xpp = factory.newPullParser();
+
+                        xpp.setInput(new StringReader(datosempleados));
+
+                        xpp.next();
+                        int eventType = xpp.getEventType();
+
+                        int c = 0;
+
+                        IMAGE1 ="";IMAGE2="";IMAGE3="";IMAGE4="";IMAGE5="";IMAGE6="";IMAGE7="";
+                        IMAGE8 ="";IMAGE9="";IMAGE10 = "";
+
+                        IMAGEDEFAULT1 ="";IMAGEDEFAULT2 ="";IMAGEDEFAULT3 ="";IMAGEDEFAULT4 ="";
+                        IMAGEDEFAULT5 ="";IMAGEDEFAULT6 ="";IMAGEDEFAULT7 ="";IMAGEDEFAULT8 ="";
+                        IMAGEDEFAULT9 ="";IMAGEDEFAULT10 ="";
+
+                        NOMBRES = "";
+
+                        String text = "";
+                        String empleados = "";
+                        String foto1 = "";
+                        String foto2 = "";
+                        String foto3 = "";
+                        String foto4 = "";
+                        String foto5 = "";
+                        String foto6 = "";
+                        String foto7 = "";
+                        String foto8 = "";
+                        String foto9 = "";
+                        String foto10 = "";
+
+                        String fotodefault1 = "";
+                        String fotodefault2 = "";
+                        String fotodefault3 = "";
+                        String fotodefault4 = "";
+                        String fotodefault5 = "";
+                        String fotodefault6 = "";
+                        String fotodefault7 = "";
+                        String fotodefault8 = "";
+                        String fotodefault9 = "";
+                        String fotodefault10 = "";
+
+                        while (eventType != XmlPullParser.END_DOCUMENT) {
+                            String tagname = xpp.getName();
+                            switch (eventType) {
+                                case XmlPullParser.START_TAG:
+                                    if (tagname.equalsIgnoreCase("SERVICES")) {
+                                        // create a new instance of employee
+                                        //employee = new Employee();
+                                    }
+                                    break;
+
+                                case XmlPullParser.TEXT:
+                                    text = xpp.getText();
+                                    break;
+
+                                case XmlPullParser.END_TAG:
+                                    if (tagname.equalsIgnoreCase("SERVICES")) {
+                                        NOMBRES = empleados;
+                                        IMAGE1 = foto1;
+                                        IMAGE2 = foto2;
+                                        IMAGE3 = foto3;
+                                        IMAGE4 = foto4;
+                                        IMAGE5 = foto5;
+                                        IMAGE6 = foto6;
+                                        IMAGE7 = foto7;
+                                        IMAGE8 = foto8;
+                                        IMAGE9 = foto9;
+                                        IMAGE10 = foto10;
+
+                                        IMAGEDEFAULT1 = fotodefault1;
+                                        IMAGEDEFAULT2 = fotodefault2;
+                                        IMAGEDEFAULT3 = fotodefault3;
+                                        IMAGEDEFAULT4 = fotodefault4;
+                                        IMAGEDEFAULT5 = fotodefault5;
+                                        IMAGEDEFAULT6 = fotodefault6;
+                                        IMAGEDEFAULT7 = fotodefault7;
+                                        IMAGEDEFAULT8 = fotodefault8;
+                                        IMAGEDEFAULT9 = fotodefault9;
+                                        IMAGEDEFAULT10 = fotodefault10;
+                                        c++;
+
+                                    } else if (tagname.equalsIgnoreCase("NOMBREEMPLEADO")) {
+                                        empleados = empleados + text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO1BASE64")) {
+                                        foto1 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO2BASE64")) {
+                                        foto2 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO3BASE64")) {
+                                        foto3 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO4BASE64")) {
+                                        foto4 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO5BASE64")) {
+                                        foto5 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO6BASE64")) {
+                                        foto6 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO7BASE64")) {
+                                        foto7 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO8BASE64")) {
+                                        foto8 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO9BASE64")) {
+                                        foto9 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTO10BASE64")) {
+                                        foto10 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT1BASE64")) {
+                                        fotodefault1 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT2BASE64")) {
+                                        fotodefault2 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT3BASE64")) {
+                                        fotodefault3 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT4BASE64")) {
+                                        fotodefault4 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT5BASE64")) {
+                                        fotodefault5 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT6BASE64")) {
+                                        fotodefault6 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT7BASE64")) {
+                                        fotodefault7 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT8BASE64")) {
+                                        fotodefault8 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT9BASE64")) {
+                                        fotodefault9 = text;
+                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT10BASE64")) {
+                                        fotodefault10 = text;
+                                    }
+                                    break;
+
+                                default:
+                                    break;
+                            }
+                            eventType = xpp.next();
+                        }
+
+                    } catch (XmlPullParserException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        finish();
+                    } finally {
+                        savebitmap(NOMBRES+"-1",IMAGE1);
+                        savebitmap(NOMBRES+"-2",IMAGE2);
+                        savebitmap(NOMBRES+"-3",IMAGE3);
+                        savebitmap(NOMBRES+"-4",IMAGE4);
+                        savebitmap(NOMBRES+"-5",IMAGE5);
+                        savebitmap(NOMBRES+"-6",IMAGE6);
+                        savebitmap(NOMBRES+"-7",IMAGE7);
+                        savebitmap(NOMBRES+"-8",IMAGE8);
+                        savebitmap(NOMBRES+"-9",IMAGE9);
+                        savebitmap(NOMBRES+"-10",IMAGE10);
+
+                        savebitmap("DEFAULT-"+"1",IMAGEDEFAULT1);
+                        savebitmap("DEFAULT-"+"2",IMAGEDEFAULT2);
+                        savebitmap("DEFAULT-"+"3",IMAGEDEFAULT3);
+                        savebitmap("DEFAULT-"+"4",IMAGEDEFAULT4);
+                        savebitmap("DEFAULT-"+"5",IMAGEDEFAULT5);
+                        savebitmap("DEFAULT-"+"6",IMAGEDEFAULT6);
+                        savebitmap("DEFAULT-"+"7",IMAGEDEFAULT7);
+                        savebitmap("DEFAULT-"+"8",IMAGEDEFAULT8);
+                        savebitmap("DEFAULT-"+"9",IMAGEDEFAULT9);
+                        savebitmap("DEFAULT-"+"10",IMAGEDEFAULT10);
+                    }
+                }
+                /*--------------------------------------------------------------------------------*/
+                band= "EnableScann";
+            }
+
+            resultString = "OK";
+            return resultString;
+        }
     }
 
     @Override

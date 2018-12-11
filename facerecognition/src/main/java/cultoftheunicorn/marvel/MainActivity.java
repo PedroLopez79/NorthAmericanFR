@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         recognizeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, Recognize.class));
+                startActivity(new Intent(MainActivity.this, NameActivity2.class));
             }
         });
 

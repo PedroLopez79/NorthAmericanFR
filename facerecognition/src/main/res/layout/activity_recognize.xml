@@ -41,15 +41,16 @@
             android:id="@+id/scan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/tutorial3_activity_java_surface_view"
+            android:layout_marginStart="25dp"
+            android:layout_marginLeft="25dp"
+            android:layout_toEndOf="@+id/tutorial3_activity_java_surface_view"
+            android:layout_toRightOf="@+id/tutorial3_activity_java_surface_view"
             android:checked="false"
+            android:enabled="false"
             android:textAllCaps="false"
             android:textOff="@string/scan"
-            android:textOn="@string/scanning"
-            android:layout_alignBottom="@+id/tutorial3_activity_java_surface_view"
-            android:layout_toRightOf="@+id/tutorial3_activity_java_surface_view"
-            android:layout_toEndOf="@+id/tutorial3_activity_java_surface_view"
-            android:layout_marginLeft="25dp"
-            android:layout_marginStart="25dp" />
+            android:textOn="@string/scanning" />
 
         <TextView
             android:id="@+id/textView3"

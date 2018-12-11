@@ -148,7 +148,7 @@ public  class PersonRecognizer {
 			mProb=(int)p[0];
 		else
 			mProb=-1;
-		if ((n[0] != -1)&&(p[0]<65))
+		if ((n[0] != -1)&&(p[0]<55))
 		//if (n[0] != -1)
 			return labelsFile.get(n[0]);
 		else
