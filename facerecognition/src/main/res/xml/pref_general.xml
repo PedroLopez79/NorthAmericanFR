@@ -26,13 +26,13 @@
 
     <EditTextPreference
         android:capitalize="words"
-        android:defaultValue="NO"
+        android:defaultValue="SI"
         android:inputType="textCapWords"
-        android:key="camarafrontal"
+        android:key="modoremoto"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Usuar camara frontal"
+        android:title="Usar Modo Remoto"
         android:password="false" />
 
     <EditTextPreference

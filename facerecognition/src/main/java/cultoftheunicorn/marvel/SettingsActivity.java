@@ -194,7 +194,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("ipservidor"));
             bindPreferenceSummaryToValue(findPreference("numeroestacion"));
-            bindPreferenceSummaryToValue(findPreference("camarafrontal"));
+            bindPreferenceSummaryToValue(findPreference("modoremoto"));
             bindPreferenceSummaryToValue(findPreference("rotarimagen"));
             bindPreferenceSummaryToValue(findPreference("rotarpantalla"));
             bindPreferenceSummaryToValue(findPreference("rotarimagenfotocapturada"));

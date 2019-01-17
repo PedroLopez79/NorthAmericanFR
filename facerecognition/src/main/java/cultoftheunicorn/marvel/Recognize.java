@@ -390,7 +390,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     public class ObtenRostros extends AsyncTask<String,String,String>
     {
         String z = "";
-        Boolean isSuccess = false;
+        //Boolean isSuccess = false;
 
         @Override
         protected void onPreExecute()
@@ -402,23 +402,23 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         protected void onPostExecute(String r)
         {
             //progressBar.setVisibility(View.GONE);
-            Toast.makeText(Recognize.this, r, Toast.LENGTH_SHORT).show();
+            /*Toast.makeText(Recognize.this, r, Toast.LENGTH_SHORT).show();
             if(isSuccess)
             {
-                Toast.makeText(Recognize.this , "Login Exitoso" , Toast.LENGTH_LONG).show();
+                Toast.makeText(Recognize.this , "Listo para reconociento facial" , Toast.LENGTH_LONG).show();
                 if (band.equals("EnableScann"))
                 {
                     scan.setEnabled(true);
                 }
-            }
-            if(!isSuccess)
-            {
-                Toast.makeText(Recognize.this , "Usuario o Clave incorrecta" , Toast.LENGTH_LONG).show();
+            }*/
+            //if(!isSuccess)
+            //{
+                Toast.makeText(Recognize.this , "Listo para reconociento facial" , Toast.LENGTH_LONG).show();
                 if (band.equals("EnableScann"))
                 {
                     scan.setEnabled(true);
                 }
-            }
+            //}
         }
         @Override
         protected String doInBackground(String... params)

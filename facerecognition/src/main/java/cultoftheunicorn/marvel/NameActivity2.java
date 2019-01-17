@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.googlecode.javacv.cpp.opencv_core;
+
 import org.apache.http.util.EncodingUtils;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
@@ -24,7 +26,7 @@ import org.opencv.cultoftheunicorn.marvel.R;
 public class NameActivity2 extends AppCompatActivity {
 
     String un,pass,db,ip,usuarioid, nombreusuario, numestacion;
-    ProgressBar progressBar;
+    ProgressBar progressBar, progress;
 
     String Nombres, Apellidos;
     EditText name, apellidos;
@@ -43,6 +45,9 @@ public class NameActivity2 extends AppCompatActivity {
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar2);
         progressBar.setVisibility(View.GONE);
+
+        //progress = (ProgressBar)findViewById(R.id.progress);
+        //progress.setVisibility(View.GONE);
 
         ip = prefs.getString("ipservidor","IANSERVICES.DDNS.NET");
         db = prefs.getString("dbservidor","AmericanGreenHouseCheck");

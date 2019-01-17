@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="16dp"
     android:paddingRight="16dp"
@@ -70,5 +71,27 @@
         android:layout_alignParentEnd="true"
         android:id="@+id/configuracion"
         android:onClick="onClickConfiguracion" />
+
+    <ImageButton
+        android:id="@+id/sync"
+        android:layout_width="78dp"
+        android:layout_height="45dp"
+        android:layout_below="@+id/button"
+        android:layout_alignStart="@+id/editText"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:background="@color/error_color"
+        android:src="@android:drawable/ic_popup_sync"
+        android:visibility="invisible"
+        tools:src="@tools:sample/backgrounds/scenic" />
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/progressBar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="0dp" />
 
 </RelativeLayout>
