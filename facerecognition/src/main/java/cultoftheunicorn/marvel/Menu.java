@@ -29,22 +29,22 @@ public class Menu extends AppCompatActivity {
         btnpersonal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                Intent intent = new Intent(getApplicationContext(), personalProyecto.class);
                 //intent.putExtra("usuarioid", usuarioid);
                 //intent.putExtra("nombreusuario", nombreusuario);
                 startActivityForResult(intent, SIGNATURE_ACTIVITY);
             }
         });
 
-        /*btnregistrapersonal.setOnClickListener(new View.OnClickListener() {
+        btnregistrapersonal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), BitacoraServicio.class);
-                intent.putExtra("usuarioid", usuarioid);
-                intent.putExtra("nombreusuario", nombreusuario);
+                Intent intent = new Intent(getApplicationContext(), NameActivity.class);
+                //intent.putExtra("usuarioid", usuarioid);
+                //intent.putExtra("nombreusuario", nombreusuario);
                 startActivityForResult(intent, SIGNATURE_ACTIVITY);
             }
-        });*/
+        });
     }
 
 }

@@ -5,8 +5,6 @@
     android:versionCode="24"
     android:versionName="2.4">
 
-    <uses-sdk android:minSdkVersion="9" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <supports-screens
@@ -40,14 +38,36 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name="cultoftheunicorn.marvel.MainActivity2"
-            android:label="Marvel">
+            android:name="cultoftheunicorn.marvel.CheckinCheckout"
+            android:label="@string/title_activity_checkin_checkout"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name="cultoftheunicorn.marvel.ListaEmpleados4"
+            android:label="@string/title_activity_lista_empleados4"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="cultoftheunicorn.marvel.personalProyecto2"
+            android:label="@string/title_activity_personal_proyecto2"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name="cultoftheunicorn.marvel.DatosEmpleado" />
+        <activity android:name="cultoftheunicorn.marvel.ListaEmpleados3" />
+        <activity
+            android:name="cultoftheunicorn.marvel.personalProyecto"
+            android:label="@string/title_activity_personal_proyecto"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name="cultoftheunicorn.marvel.principalMenu"
+            android:label="@string/title_activity_principal_menu"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="cultoftheunicorn.marvel.MainActivity2"
+            android:label="Marvel" />
         <activity
             android:name="cultoftheunicorn.marvel.Recognize"
             android:screenOrientation="landscape" />
@@ -60,9 +80,7 @@
             android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name="cultoftheunicorn.marvel.ReviewResults"
-            android:label="Review and Mark" />
-
-        <!-- android:screenOrientation="portrait" -->
+            android:label="Review and Mark" /> <!-- android:screenOrientation="portrait" -->
         <activity android:name="cultoftheunicorn.marvel.MainActivity" />
         <activity android:name="cultoftheunicorn.marvel.Menu" />
         <activity
@@ -71,7 +89,7 @@
         <activity android:name="cultoftheunicorn.marvel.EncuentraPersonal" />
         <activity android:name="cultoftheunicorn.marvel.ListaEmpleados" />
         <activity android:name="cultoftheunicorn.marvel.ListaEmpleados2" />
-        <activity android:name="cultoftheunicorn.marvel.NameActivity2"></activity>
+        <activity android:name="cultoftheunicorn.marvel.NameActivity2" />
     </application>
 
 </manifest>

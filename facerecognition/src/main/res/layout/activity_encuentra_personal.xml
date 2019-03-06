@@ -16,7 +16,8 @@
         android:text="@string/Nombres"
         android:textColor="@android:color/holo_orange_dark"
         android:textSize="10sp"
-        android:textStyle="normal|bold" />
+        android:textStyle="normal|bold"
+        tools:ignore="RtlCompat" />
 
     <ImageView
         android:id="@+id/ivcustomlayout"
@@ -24,7 +25,8 @@
         android:layout_height="120dp"
         android:layout_alignBottom="@+id/txttelefono"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="20dp" />
+        android:layout_marginEnd="20dp"
+        tools:ignore="RtlCompat" />
 
     <TextView
         android:id="@+id/txtcodigo"
@@ -34,7 +36,8 @@
         android:layout_below="@+id/txtnombre"
         android:text="codigo"
         android:textColor="@android:color/holo_orange_dark"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:ignore="RtlCompat" />
 
     <TextView
         android:id="@+id/txtdomicilio"
@@ -46,7 +49,8 @@
         android:text="@string/Domicilio"
         android:textColor="@android:color/holo_orange_dark"
         android:textSize="10sp"
-        android:textStyle="normal|bold" />
+        android:textStyle="normal|bold"
+        tools:ignore="RtlCompat" />
 
     <TextView
         android:id="@+id/txtCiudad"
@@ -58,7 +62,8 @@
         android:text="ciudad"
         android:textColor="?attr/colorAccent"
         android:textSize="18sp"
-        android:textStyle="normal|bold" />
+        android:textStyle="normal|bold"
+        tools:ignore="RtlCompat" />
 
     <TextView
         android:id="@+id/txtcodigoimss"
@@ -68,7 +73,8 @@
         android:layout_below="@+id/txtdomicilio"
         android:text="imss"
         android:textColor="@android:color/holo_orange_dark"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:ignore="RtlCompat" />
 
     <TextView
         android:id="@+id/txttelefono"
@@ -80,6 +86,7 @@
         android:textAllCaps="true"
         android:textColor="?attr/colorAccent"
         android:textSize="24sp"
-        android:textStyle="normal|bold" />
+        android:textStyle="normal|bold"
+        tools:ignore="RtlCompat" />
 
 </RelativeLayout>

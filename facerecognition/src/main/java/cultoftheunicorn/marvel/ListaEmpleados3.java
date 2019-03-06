@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -30,34 +29,41 @@ import java.util.List;
 import cultoftheunicorn.marvel.dao.EmpleadoDAO;
 import cultoftheunicorn.marvel.modelo.Empleado;
 
-public class ListaEmpleados2 extends AppCompatActivity {
+public class ListaEmpleados3 extends AppCompatActivity {
 
-    String IMAGE[];
-    String NOMBRES[];
-    String IDEMPLEADO[];
+    String[] IMAGE;
+    String[] NOMBRES;
+    String[] IDEMPLEADO;
+    String[] IDPROYECTO;
     String modoremoto = "";
     private List<Empleado> mListEmpleado;
 
     public static final int SIGNATURE_ACTIVITY = 1;
     String TAG = "Response";
     String ip, resultString, numestacion, name;
+    String proyect = "";
+    String IDPROYECT = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lista_empleados2);
+        setContentView(R.layout.activity_lista_empleados3);
 
         // ---------------------------------------------------------------------------------------//
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         modoremoto= prefs.getString("modoremoto", "SI");
 
+        Intent intent2 = getIntent();
+        proyect = intent2.getStringExtra("proyect");
+
+        IDPROYECT = proyect.substring(1,proyect.indexOf("]"));
+
         EmpleadoDAO empleado = new EmpleadoDAO(this);
         //obtener listado local de usuario, empleados, fotodefault abrir bases de datos local
-        mListEmpleado = empleado.getAllEmpleado();
+        mListEmpleado = empleado.getAllEmpleadoProyecto(Long.parseLong(IDPROYECT));
 
-        AsyncCallWS checkpersonalnombre = new AsyncCallWS();// this is the Asynctask, which is used to process in background to reduce load on app process
+        ListaEmpleados3.AsyncCallWS checkpersonalnombre = new ListaEmpleados3.AsyncCallWS();// this is the Asynctask, which is used to process in background to reduce load on app process
         checkpersonalnombre.execute();
-
     }
 
     private class AsyncCallWS extends AsyncTask<Void, Void, Void> {
@@ -88,30 +94,29 @@ public class ListaEmpleados2 extends AppCompatActivity {
             int x; x=0;
             if (modoremoto.equals("NO")) {
 
-                for (int z=0; z <= mListEmpleado.size()-1; z++)
-                    if (mListEmpleado.get(z).getNombre().toString().trim().toUpperCase().equals(Nombres.toString().trim().toUpperCase() + " " + Apellidos.toString().trim().toUpperCase()))
-                        x++;
-
-                IMAGE = new String[x];
-                NOMBRES = new String[x];
-                IDEMPLEADO = new String[x];
+                IMAGE = new String[mListEmpleado.size()];
+                NOMBRES = new String[mListEmpleado.size()];
+                IDEMPLEADO = new String[mListEmpleado.size()];
+                IDPROYECTO = new String[mListEmpleado.size()];
 
                 x = 0;
                 for (int i=0; i <= mListEmpleado.size()-1; i++)
                 {
                     String em = mListEmpleado.get(i).getNombre().toString();
-                    String emcompara = Nombres.toString().trim().toUpperCase() + " " + Apellidos.toString().trim().toUpperCase();
-                    if (em.toString().trim().toUpperCase().equals(emcompara.toString().trim().toUpperCase()))
-                    {
+                    //String emcompara = Nombres.toString().trim().toUpperCase() + " " + Apellidos.toString().trim().toUpperCase();
+
                         empleados   = mListEmpleado.get(i).getNombre().toString();
                         fotoemp     = mListEmpleado.get(i).getFotoEmpleado1();
 
-                        IDEMPLEADO[x] = Long.toString(mListEmpleado.get(i).getId());
-                        NOMBRES[x] = mListEmpleado.get(i).getNombre().toString();;
+                        IDEMPLEADO[i] = Long.toString(mListEmpleado.get(i).getId());
+                        NOMBRES[i] = mListEmpleado.get(i).getNombre().toString();
+                        IDPROYECTO[i] = String.valueOf(mListEmpleado.get(i).getIdproyecto());
+
                         //DESCRIPCION[c] = descripcion;
-                        IMAGE[x] = Base64.encodeToString(fotoemp, Base64.DEFAULT);
+                        IMAGE[i] = Base64.encodeToString(fotoemp, Base64.DEFAULT);
+
                         x++;
-                    }
+
                 }
             }else {
 
@@ -203,7 +208,7 @@ public class ListaEmpleados2 extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             ListView lvEmpleados= (ListView) findViewById(R.id.lvEmpleados);
 
-            ListaEmpleados2.customadapter ca = new ListaEmpleados2.customadapter();
+            ListaEmpleados3.customadapter ca = new ListaEmpleados3.customadapter();
             lvEmpleados.setAdapter(ca);
 
             Log.i(TAG, "onPostExecute");
@@ -237,6 +242,7 @@ public class ListaEmpleados2 extends AppCompatActivity {
             convertView = getLayoutInflater().inflate(R.layout.activity_encuentra_personal,null);
             final String ID = IDEMPLEADO[position].toString();
             final String NOMBREEMP = NOMBRES[position].toString();
+            final String IDP = IDPROYECTO[position].toString();
             if (NOMBRES.length > 0)
             {
                 try {
@@ -255,15 +261,16 @@ public class ListaEmpleados2 extends AppCompatActivity {
                     imageview.setImageBitmap(decode);
                 }catch(Exception e){}}
 
-                convertView.setOnClickListener(new View.OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(getApplicationContext(), Recognize.class);
-                        intent.putExtra("IDEMPLEADO", ID);
-                        intent.putExtra("NOMBREEMPLEADO", NOMBREEMP);
-                        startActivityForResult(intent, SIGNATURE_ACTIVITY);
-                    }
-                });
+            convertView.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getApplicationContext(), DatosEmpleado.class);
+                    intent.putExtra("IDEMPLEADO", ID);
+                    intent.putExtra("IDPROYECTO", IDP);
+                    intent.putExtra("NOMBREEMPLEADO", NOMBREEMP);
+                    startActivityForResult(intent, SIGNATURE_ACTIVITY);
+                }
+            });
 
             return convertView;
         }

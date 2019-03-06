@@ -14,31 +14,30 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_menu);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
+        //setSupportActionBar(toolbar);
 
         if(getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Marvel");
         }
 
-        Button recognizeButton = (Button) findViewById(R.id.recognizeButton);
-        Button trainingButton = (Button) findViewById(R.id.trainingButton);
+        Button personalButton = (Button) findViewById(R.id.btnpersonal);
+        Button restrapersonalButton = (Button) findViewById(R.id.btnregistrapersonal);
 
-        recognizeButton.setOnClickListener(new View.OnClickListener() {
+        personalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, NameActivity2.class));
+                startActivity(new Intent(MainActivity.this, personalProyecto.class));
             }
         });
 
-        trainingButton.setOnClickListener(new View.OnClickListener() {
+        restrapersonalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(MainActivity.this, NameActivity.class));
             }
         });
-
     }
 }

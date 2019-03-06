@@ -36,14 +36,13 @@
         android:password="false" />
 
     <EditTextPreference
-        android:capitalize="words"
         android:defaultValue="0"
-        android:inputType="textCapWords"
-        android:key="rotarimagen"
+        android:inputType="number"
+        android:key="timeout"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Rotar Camara"
+        android:title="TIME OUT"
         android:password="false" />
 
     <EditTextPreference

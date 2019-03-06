@@ -7,11 +7,39 @@
     android:fillViewport="true">
 
     <RelativeLayout
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context="org.opencv.cultoftheunicorn.marvel.cultoftheunicorn.marvel.NameActivity">
 
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:orientation="vertical"
+            tools:ignore="GradleDependency"/>
+
+        <Spinner
+            android:id="@+id/spinnerproyectos2"
+            style="@android:style/Widget.Holo.Light.Spinner"
+            android:layout_width="366dp"
+            android:layout_height="68dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="31dp"
+            android:layout_marginLeft="31dp"
+            android:layout_marginTop="467dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="28dp"
+            android:spinnerMode="dropdown"
+            android:textSize="10sp"
+            app:layout_constraintBottom_toTopOf="@+id/btnbuscar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="MissingConstraints" />
 
         <ProgressBar
             android:id="@+id/progressBar2"
@@ -166,6 +194,27 @@
             android:gravity="center"
             android:textAlignment="center"
             android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txtproyecto2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="31dp"
+            android:layout_marginLeft="31dp"
+            android:layout_marginTop="433dp"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="2.02"
+            android:text="PROYECTO"
+            android:textSize="24sp"
+            android:textStyle="normal|bold"
+            app:layout_constraintBottom_toTopOf="@+id/spinnerproyectos"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.539"
+            tools:ignore="MissingConstraints" />
 
     </RelativeLayout>
 

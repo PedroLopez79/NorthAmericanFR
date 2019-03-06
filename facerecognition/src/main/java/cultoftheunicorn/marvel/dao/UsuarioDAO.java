@@ -95,11 +95,12 @@ public class UsuarioDAO {
     private Usuario cursorToUsuario(Cursor cursor) {
         Usuario usuario = new Usuario();
         usuario.setId(cursor.getLong(0));
-        usuario.setNombre(cursor.getString(1));
-        usuario.setUserName(cursor.getString(2));
-        usuario.setUserPassword(cursor.getString(3));
-        usuario.setFirmaDefault(cursor.getBlob(4));
-        usuario.setAuditor(cursor.getString(5));
+        usuario.setCodigo(cursor.getString(1));
+        usuario.setNombre(cursor.getString(2));
+        usuario.setUserName(cursor.getString(3));
+        usuario.setUserPassword(cursor.getString(4));
+        usuario.setFirmaDefault(cursor.getBlob(5));
+        usuario.setAuditor(cursor.getString(6));
 
         return usuario;
     }

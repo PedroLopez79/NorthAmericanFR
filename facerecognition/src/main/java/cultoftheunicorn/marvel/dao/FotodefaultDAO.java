@@ -52,7 +52,7 @@ public class FotodefaultDAO {
         mDatabase.close();
     }
 
-    public FotoDefault createFotoEmpleado(byte[] FotoDefault1, byte[] FotoDefault2, byte[] FotoDefault3, byte[] FotoDefault4, byte[] FotoDefault5,
+    public FotoDefault createFotoDefault(byte[] FotoDefault1, byte[] FotoDefault2, byte[] FotoDefault3, byte[] FotoDefault4, byte[] FotoDefault5,
                                           byte[] FotoDefault6, byte[] FotoDefault7, byte[] FotoDefault8, byte[] FotoDefault9, byte[] FotoDefault10) {
         ContentValues values = new ContentValues();
         values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT1, FotoDefault1);
@@ -82,7 +82,7 @@ public class FotodefaultDAO {
         mDatabase.delete(AdminSqLiteOpenHelper.TABLE_FOTODEFAULT, null, null);
     }
 
-    public List<FotoDefault> getAllFotoEmpleado() {
+    public List<FotoDefault> getAllFotoDefault() {
         List<FotoDefault> listFotoDefault = new ArrayList<FotoDefault>();
 
         Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_FOTODEFAULT, mAllColumns,
@@ -101,16 +101,16 @@ public class FotodefaultDAO {
 
     private FotoDefault cursorToFotoDefault(Cursor cursor) {
         FotoDefault fotodefault = new FotoDefault();
-        fotodefault.setFotoDefault1(cursor.getBlob(1));
-        fotodefault.setFotoDefault2(cursor.getBlob(2));
-        fotodefault.setFotoDefault3(cursor.getBlob(3));
-        fotodefault.setFotoDefault4(cursor.getBlob(4));
-        fotodefault.setFotoDefault5(cursor.getBlob(5));
-        fotodefault.setFotoDefault6(cursor.getBlob(6));
-        fotodefault.setFotoDefault7(cursor.getBlob(7));
-        fotodefault.setFotoDefault8(cursor.getBlob(8));
-        fotodefault.setFotoDefault9(cursor.getBlob(9));
-        fotodefault.setFotoDefault10(cursor.getBlob(10));
+        fotodefault.setFotoDefault1(cursor.getBlob(0));
+        fotodefault.setFotoDefault2(cursor.getBlob(1));
+        fotodefault.setFotoDefault3(cursor.getBlob(2));
+        fotodefault.setFotoDefault4(cursor.getBlob(3));
+        fotodefault.setFotoDefault5(cursor.getBlob(4));
+        fotodefault.setFotoDefault6(cursor.getBlob(5));
+        fotodefault.setFotoDefault7(cursor.getBlob(6));
+        fotodefault.setFotoDefault8(cursor.getBlob(7));
+        fotodefault.setFotoDefault9(cursor.getBlob(8));
+        fotodefault.setFotoDefault10(cursor.getBlob(9));
 
         return fotodefault;
     }

@@ -44,12 +44,16 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.http.util.EncodingUtils;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+
+import cultoftheunicorn.marvel.dao.EmpleadoDAO;
+import cultoftheunicorn.marvel.modelo.Empleado;
 
 public class Training extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -96,6 +100,8 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
     int countImages=0;
 
     //--------------------------------------------------------------------------------------------//
+    String Nombres, Apellidos, Domicilio, Ciudad, Telefono, Proyecto, IDPROYECTO;
+    //--------------------------------------------------------------------------------------------//
     public static final int SIGNATURE_ACTIVITY = 1;
     String TAG2 = "Response";
     String resultString;
@@ -103,6 +109,10 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
 
     ArrayList<Bitmap> bitmapArray = new ArrayList<Bitmap>();
     String dbface = "REGISTERING";
+    //--------------------------------------------------------------------------------------------//
+    String modoremoto = "";
+    byte[] byte1; byte[] byte2; byte[] byte3; byte[] byte4; byte[] byte5; byte[] byte6;
+    byte[] byte7; byte[] byte8; byte[] byte9; byte[] byte10;
     //--------------------------------------------------------------------------------------------//
 
     Labels labelsFile;
@@ -193,8 +203,21 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
         un = prefs.getString("usuarioservidor","sa");
         pass = prefs.getString("passwordservidor","IAN32");
         numestacion = prefs.getString("numeroestacion","2601");
+        modoremoto= prefs.getString("modoremoto", "SI");
+//------------------------------------------------------------------------------------------------//
+        text    = getIntent().getStringExtra("name");
+        Nombres = getIntent().getStringExtra("Nombres");
+        Apellidos = getIntent().getStringExtra("Apellidos");
+        Domicilio = getIntent().getStringExtra("Domicilio");
+        Ciudad = getIntent().getStringExtra("Ciudad");
+        Telefono = getIntent().getStringExtra("Telefono");
+        Proyecto = getIntent().getStringExtra("Proyecto");
 
-        text = getIntent().getStringExtra("name");
+        IDPROYECTO = Proyecto.substring(1,Proyecto.indexOf("]"));
+//------------------------------------------------------------------------------------------------//
+
+        if (text == null) text= "";
+
         Iv = (ImageView) findViewById(R.id.imagePreview);
 
         capture = (ToggleButton) findViewById(R.id.capture);
@@ -239,6 +262,108 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
 
     }
 
+    public void RegistraRostrosLC()
+    {
+        String nombre;
+        //-----variable para imagen base64--------------------------------------------------------//
+        String encodedImage2;
+        String IMAGE1, IMAGE2, IMAGE3, IMAGE4, IMAGE5, IMAGE6, IMAGE7, IMAGE8, IMAGE9, IMAGE10;
+
+        IMAGE1 = ""; IMAGE2 = "";  IMAGE3 = "";  IMAGE4 = "";  IMAGE5 = ""; IMAGE6 = ""; IMAGE7 = "";
+        IMAGE8 = ""; IMAGE9 = "";  IMAGE10 = "";
+
+        Bitmap image = null;
+        //----------------------------------------------------------------------------------------//
+        EmpleadoDAO empleado = new EmpleadoDAO(this);
+        //----------------------------------------------------------------------------------------//
+        nombre = getIntent().getStringExtra("name");
+        encodedImage2 = "";
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(0);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte1 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(1);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte2 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(2);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte3 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(3);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte4 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(4);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte5 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(5);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte6 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(6);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte7 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(7);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte8 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(8);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte9 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+        if (bitmapArray.size() > 0) {
+            image = bitmapArray.get(9);
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+            byte10 = byteArrayOutputStream.toByteArray();
+            //encodedImage2 = Base64.encodeToString(byte1, Base64.DEFAULT);
+        }
+
+        dbface = "REGISTERDONE";
+        Empleado createdempleado1 = empleado.createEmpleado(nombre.toString().replace("'",""), "", "", "", "", "", "", "", "", "", byte1,
+                2601, 1, byte1, byte2, byte3, byte4, byte5, byte6, byte7, byte8, byte9, byte10, 1, "LOCAL", "NO", Long.parseLong(IDPROYECTO));
+    }
+
     public String conectar() {
         String SOAP_ACTION = "urn:androidserviceIntf-Iandroidservice#registrapersonalrostro";
         String METHOD_NAME = "registrapersonalrostro";
@@ -264,13 +389,14 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
             SoapObject Request = new SoapObject(NAMESPACE, METHOD_NAME);
             Request.addProperty("Nombre", nombre);
             Request.addProperty("CodigoEmpleado", "");
-            Request.addProperty("Domicilio", "");
-            Request.addProperty("Ciudad", "");
-            Request.addProperty("Telefono", "");
+            Request.addProperty("Domicilio", Domicilio);
+            Request.addProperty("Ciudad", Ciudad);
+            Request.addProperty("Telefono", Telefono);
             Request.addProperty("CuentaContable", "");
             Request.addProperty("Fecha", fecha);
             Request.addProperty("UsuarioID", "1");
             Request.addProperty("EstacionID", "2601");
+            Request.addProperty("ProyectoID", IDPROYECTO);
             //---------------------obtener las 10 imagenes ya capturadas--------------------------//
             encodedImage2 = "";
             if (bitmapArray.size() > 0) {
@@ -447,7 +573,12 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
     void captureOnClick()
     {
         if (capture.isChecked()) {
-            if (countImages==0){ bitmapArray.clear();}
+            if (countImages==0){
+                bitmapArray.clear();
+
+                if (bitmapArray.equals(null))
+                    bitmapArray = new ArrayList<Bitmap>();
+            }
             faceState = TRAINING;
         }
         else {
@@ -459,8 +590,18 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
 
             //--MANDAR GUARDAR IMAGENES A BD EMPLEADO NUEVO---------------------------------------//
             if ((bitmapArray.size() == 10)&&(dbface == "REGISTERING")) {
-                RegistraRostros registrarostros = new RegistraRostros();// this is the Asynctask, which is used to process in background to reduce load on app process
-                registrarostros.execute("");
+
+                if (modoremoto.equals("NO")) {
+                    //RUTINA DE GUARDADO DE IMAGENES EN BASE DE DATOS LOCAL---------------------------//
+                    RegistraRostrosLC();
+                    //--------------------------------------------------------------------------------//
+                }
+                else {
+                    //RUTINA DE GUARDADO DE IMAGENES EN BASE DE DATOS REMOTA--------------------------//
+                    RegistraRostros registrarostros = new RegistraRostros();// this is the Asynctask, which is used to process in background to reduce load on app process
+                    registrarostros.execute("");
+                    //--------------------------------------------------------------------------------//
+                }
 
                 finish();
             }

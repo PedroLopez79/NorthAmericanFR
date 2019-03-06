@@ -10,6 +10,21 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "AdminSqLiteOpenHelper";
 
+    //columnas tabla proyectos
+    public static final String TABLE_CHECKINCHECKOUT     =  "ChechInCheckOut";
+    public static final String COLUMN_CHECKINCHECKOUTID  =  "CHECKINCHECKOUTID";
+    public static final String COLUMN_CPROYECTOID        =  "PROYECTOID";
+    public static final String COLUMN_CEMPLEADOID        =  "EMPLEADOID";
+    public static final String COLUMN_FCHECKIN           =  "CHECKIN";
+    public static final String COLUMN_FCHECKOUT          =  "CHECKOUT";
+    public static final String COLUMN_CFECHA             =  "FECHA";
+    public static final String COLUMN_CHECKINHECHO       =  "CHECKINHECHO";
+
+    //columnas tabla proyectos
+    public static final String TABLE_PROYECTO       =  "Proyecto";
+    public static final String COLUMN_PROYECTOID    =  "IDPROYECTO";
+    public static final String COLUMN_PDESCRIPCION  =  "DESCRIPCION";
+
     //columnas tabla empleados
     public static final String TABLE_EMPLEADOS       = "Empleados";
     public static final String COLUMN_IDEMPLEADOS    = "IDEMPLEADO";
@@ -39,6 +54,7 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_IDDISPOSITIVO  = "IDDISPOSITIVO";
     public static final String COLUMN_REGISTRO       = "REGISTRO";
     public static final String COLUMN_SYNCRONIZADO   = "SYNCRONIZADO";
+    public static final String COLUMN_IDPROYECTO     = "IDPROYECTO";
 
     //columnas tabla FOTODEFAULT
     public static final String TABLE_FOTODEFAULT     = "FOTODEFAULT";
@@ -94,7 +110,8 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
             + COLUMN_FOTOEMPLEADO10  + " BLOB, "
             + COLUMN_IDDISPOSITIVO   + " INTEGER, "
             + COLUMN_REGISTRO        + " TEXT, "
-            + COLUMN_SYNCRONIZADO    + " TEXT"
+            + COLUMN_SYNCRONIZADO    + " TEXT, "
+            + COLUMN_IDPROYECTO      + " TEXT"
             + ");";
 
     //sql statement (crear tabla FOTODEFAULT)
@@ -118,8 +135,23 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
             + COLUMN_NOMBRE         + " TEXT, "
             + COLUMN_USERNAME       + " TEXT, "
             + COLUMN_USERPASSWORD   + " TEXT, "
-            + COLUMN_FIRMADEFUALT   + " TEXT, "
+            + COLUMN_FIRMADEFUALT   + " BLOB, "
             + COLUMN_AUDITOR        + " TEXT "
+            + ");";
+
+    private static final String SQL_CREATE_TABLE_PROYECTO = "CREATE TABLE " + TABLE_PROYECTO + " ("
+            + COLUMN_PROYECTOID     + " INTEGER PRIMARY KEY, "
+            + COLUMN_PDESCRIPCION   + " TEXT "
+            + ");";
+
+    private static final String SQL_CREATE_TABLE_CHECKINCHECKOUT = "CREATE TABLE " + TABLE_CHECKINCHECKOUT + " ("
+            + COLUMN_CHECKINCHECKOUTID     + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + COLUMN_CPROYECTOID   + " INT, "
+            + COLUMN_CEMPLEADOID   + " INT, "
+            + COLUMN_FCHECKIN      + " NUMERIC, "
+            + COLUMN_FCHECKOUT     + " NUMERIC, "
+            + COLUMN_CFECHA        + " NUMERIC, "
+            + COLUMN_CHECKINHECHO  + " TEXT"
             + ");";
 
     public AdminSqLiteOpenHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
@@ -136,6 +168,8 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_EMPLEADOS);
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_FOTODEFAULT);
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_USUARIO);
+        sqLiteDatabase.execSQL(SQL_CREATE_TABLE_PROYECTO);
+        sqLiteDatabase.execSQL(SQL_CREATE_TABLE_CHECKINCHECKOUT);
     }
 
     @Override
@@ -146,6 +180,8 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EMPLEADOS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_FOTODEFAULT);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USUARIO);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROYECTO);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CHECKINCHECKOUT);
 
         // recreate the tables
         onCreate(db);

@@ -36,6 +36,10 @@ public class FotoDefault {
         this.mFotoDefault10 = mFotoDefault10;
     }
 
+    public byte[] getFotoDefault1() {
+        return mFotoDefault1;
+    }
+
     public void setFotoDefault1(byte[] mFotoDefault1) {
         this.mFotoDefault1 = mFotoDefault1;
     }

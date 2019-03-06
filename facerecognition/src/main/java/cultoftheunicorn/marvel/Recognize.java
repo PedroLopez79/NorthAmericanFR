@@ -47,8 +47,10 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.http.util.EncodingUtils;
@@ -59,6 +61,12 @@ import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
+
+import cultoftheunicorn.marvel.dao.EmpleadoDAO;
+import cultoftheunicorn.marvel.dao.FotodefaultDAO;
+import cultoftheunicorn.marvel.modelo.Empleado;
+import cultoftheunicorn.marvel.modelo.FotoDefault;
+import cultoftheunicorn.marvel.modelo.Usuario;
 
 //import android.content.Context;
 
@@ -74,6 +82,10 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
 
     private static final int frontCam =1;
     private static final int backCam =2;
+
+    private List<Empleado> mListEmpleado;
+    private List<FotoDefault> mListFotoDefault;
+    String modoremoto = "";
 
     private int faceState=IDLE;
 
@@ -99,8 +111,14 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     String IMAGE1,IMAGE2,IMAGE3,IMAGE4,IMAGE5,IMAGE6,IMAGE7,IMAGE8,IMAGE9,IMAGE10;
     String IMAGEDEFAULT1,IMAGEDEFAULT2,IMAGEDEFAULT3,IMAGEDEFAULT4,IMAGEDEFAULT5,IMAGEDEFAULT6,
            IMAGEDEFAULT7,IMAGEDEFAULT8,IMAGEDEFAULT9,IMAGEDEFAULT10;
+    byte[] image1; byte[] image2; byte[] image3; byte[] image4; byte[] image5; byte[] image6;
+    byte[] image7; byte[] image8; byte[] image9; byte[] image10;
+    byte[] defaultimage1; byte[] defaultimage2; byte[] defaultimage3; byte[] defaultimage4; byte[] defaultimage5; byte[] defaultimage6;
+    byte[] defaultimage7; byte[] defaultimage8; byte[] defaultimage9; byte[] defaultimage10;
+
     String NOMBRES;
     String band = "Disable Scann";
+    String FACESFILEEXIST;
     //--------------------------------------------------------------------------------------------//
 
     private Tutorial3View   mOpenCvCameraView;
@@ -120,6 +138,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     static final long MAXIMG = 10;
 
     Labels labelsFile;
+
     static {
         OpenCVLoader.initDebug();
         System.loadLibrary("opencv_java");
@@ -200,6 +219,63 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         }
     }
 
+    public void guarda10fotoempleado10fotodefault(String NOMBREEMPELADO){
+        EmpleadoDAO empleado = new EmpleadoDAO(this);
+        FotodefaultDAO fotodefault = new FotodefaultDAO(this);
+
+        mListEmpleado = empleado.getAllEmpleado();
+        mListFotoDefault = fotodefault.getAllFotoDefault();
+
+        if (mListFotoDefault.size() > 0)
+        {
+            defaultimage1 = mListFotoDefault.get(0).getFotoDefault1();
+            defaultimage2 = mListFotoDefault.get(0).getFotoDefault2();
+            defaultimage3 = mListFotoDefault.get(0).getFotoDefault3();
+            defaultimage4 = mListFotoDefault.get(0).getFotoDefault4();
+            defaultimage5 = mListFotoDefault.get(0).getFotoDefault5();
+            defaultimage6 = mListFotoDefault.get(0).getFotoDefault6();
+            defaultimage7 = mListFotoDefault.get(0).getFotoDefault7();
+            defaultimage8 = mListFotoDefault.get(0).getFotoDefault8();
+            defaultimage9 = mListFotoDefault.get(0).getFotoDefault9();
+            defaultimage10 = mListFotoDefault.get(0).getFotoDefault10();
+        }
+
+        for (int i=0; i <= mListEmpleado.size()-1; i++)
+        {
+            String em = mListEmpleado.get(i).getNombre().toString();
+            if (em.toString().trim().toUpperCase().equals(NOMBREEMPELADO.toString().trim().toUpperCase())) {
+                image1 = mListEmpleado.get(i).getFotoEmpleado1();
+                image2 = mListEmpleado.get(i).getFotoEmpleado2();
+                image3 = mListEmpleado.get(i).getFotoEmpleado3();
+                image4 = mListEmpleado.get(i).getFotoEmpleado4();
+                image5 = mListEmpleado.get(i).getFotoEmpleado5();
+                image6 = mListEmpleado.get(i).getFotoEmpleado6();
+                image7 = mListEmpleado.get(i).getFotoEmpleado7();
+                image8 = mListEmpleado.get(i).getFotoEmpleado8();
+                image9 = mListEmpleado.get(i).getFotoEmpleado9();
+                image10 = mListEmpleado.get(i).getFotoEmpleado10();
+
+                NOMBRES = NOMBREEMPELADO.toString().trim().toUpperCase();
+                break;
+            }
+        }
+
+        savebitmapLC("DEFAULT-" + "1", defaultimage1); savebitmapLC("DEFAULT-" + "2", defaultimage2);
+        savebitmapLC("DEFAULT-" + "3", defaultimage3); savebitmapLC("DEFAULT-" + "4", defaultimage4);
+        savebitmapLC("DEFAULT-" + "5", defaultimage5); savebitmapLC("DEFAULT-" + "6", defaultimage6);
+        savebitmapLC("DEFAULT-" + "7", defaultimage7); savebitmapLC("DEFAULT-" + "8", defaultimage8);
+        savebitmapLC("DEFAULT-" + "9", defaultimage9); savebitmapLC("DEFAULT-" + "10", defaultimage10);
+
+        savebitmapLC(NOMBRES + "-1", image1); savebitmapLC(NOMBRES + "-2", image2);
+        savebitmapLC(NOMBRES + "-3", image3); savebitmapLC(NOMBRES + "-4", image4);
+        savebitmapLC(NOMBRES + "-5", image5); savebitmapLC(NOMBRES + "-6", image6);
+        savebitmapLC(NOMBRES + "-7", image7); savebitmapLC(NOMBRES + "-8", image8);
+        savebitmapLC(NOMBRES + "-9", image9); savebitmapLC(NOMBRES + "-10", image10);
+
+        band = "EnableScann";
+        FACESFILEEXIST = "OK";
+    }
+
     public void savebitmap(String bitmapfilename, String imagebase64) {
         File file;
         file = new File(mPath, bitmapfilename+".jpg");
@@ -208,6 +284,25 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             stream = new FileOutputStream(file);
             byte[] decodedString = Base64.decode(imagebase64, Base64.DEFAULT);
             Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            decodedByte = getResizedBitmap(decodedByte, 128, 128);
+            decodedByte.compress(Bitmap.CompressFormat.JPEG,100,stream);
+
+            stream.flush();
+            stream.close();
+
+        }catch (IOException e) // Catch the exception
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void savebitmapLC(String bitmapfilename, byte[] image) {
+        File file;
+        file = new File(mPath, bitmapfilename+".jpg");
+        try{
+            OutputStream stream = null;
+            stream = new FileOutputStream(file);
+            Bitmap decodedByte = BitmapFactory.decodeByteArray(image, 0, image.length);
             decodedByte = getResizedBitmap(decodedByte, 128, 128);
             decodedByte.compress(Bitmap.CompressFormat.JPEG,100,stream);
 
@@ -238,9 +333,21 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     }
 
     @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Recognize.this, Recognize.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("EXIT", true);
+        startActivity(intent);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recognize);
+
+        Calendar cal = Calendar.getInstance();
+        long StartTime= System.currentTimeMillis();
+        long currentTime =StartTime;
 
         scan = (ToggleButton) findViewById(R.id.scan);
         final TextView results = (TextView) findViewById(R.id.results);
@@ -252,91 +359,118 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         un = prefs.getString("usuarioservidor","sa");
         pass = prefs.getString("passwordservidor","IAN32");
         numestacion = prefs.getString("numeroestacion","2601");
+        modoremoto= prefs.getString("modoremoto", "SI");
 
-        //mPath=getFilesDir()+"/facerecogOCV/";
-        mPath = Environment.getExternalStorageDirectory()+"/facerecogOCV/";
-        //---------RUTINA DE LIMPIADO DE ARCHIVOS EN DIRECTORIO facerecogOCV----------------------//
-        deleteRecursive(mPath);
+        //SI SE PRESIONA BACK QUE TERMINE LA FORMA------------------------------------------------//
+        if (getIntent().getBooleanExtra("EXIT", false)) {
+            finish();
+        }
+        //----------------------------------------------------------------------------------------//
 
-        //---------RUTINA PARA GENERAR LOS ARCHIVO JPG, 10 imagenes default- 10 imagens sujeto a autenticar//
-        ObtenRostros obtenrostros = new ObtenRostros();// this is the Asynctask, which is used to process in background to reduce load on app process
-        obtenrostros.execute("");
+        if (!getIntent().getBooleanExtra("EXIT", false)) {
+            //mPath=getFilesDir()+"/facerecogOCV/";
+            mPath = Environment.getExternalStorageDirectory() + "/facerecogOCV/";
+            //---------RUTINA DE LIMPIADO DE ARCHIVOS EN DIRECTORIO facerecogOCV----------------------//
+            deleteRecursive(mPath);
+            //---------RUTINA PARA GENERAR LOS ARCHIVO JPG, 10 imagenes default- 10 imagens sujeto a autenticar//
 
-        mOpenCvCameraView = (Tutorial3View) findViewById(R.id.tutorial3_activity_java_surface_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
+            ObtenRostros obtenrostros = new ObtenRostros();// this is the Asynctask, which is used to process in background to reduce load on app process
+            obtenrostros.execute("");
+            //------------------------------------------------------------------------------------//
+            //--PROCESO PARA ASEGURAR EL GUARDADO DE LOS ROSTROS----------------------------------//
+            FACESFILEEXIST = "NO";
+            cal = Calendar.getInstance();
+            StartTime = System.currentTimeMillis();
+            currentTime = StartTime;
+            currentTime = cal.getTimeInMillis();
 
-        Log.e("Path", mPath);
+            while (!FACESFILEEXIST.equals("OK"))
+            {
+                System.out.println("Start time is "+StartTime);
+                System.out.println("Current time is "+currentTime);
+                System.out.println("Timer will has stopped");
+                currentTime++;
+            }
+            //------------------------------------------------------------------------------------//
+            //------------------------------------------------------------------------------------//
+            mOpenCvCameraView = (Tutorial3View) findViewById(R.id.tutorial3_activity_java_surface_view);
+            mOpenCvCameraView.setCvCameraViewListener(this);
 
-        //-------------------------POSICION ORIGINAL DE LABELSFILE--------------------------------//
-        labelsFile= new Labels(mPath);
-        //-------------------------------------------------------------------------------------------------//
+            Log.e("Path", mPath);
+            //-------------------------POSICION ORIGINAL DE LABELSFILE--------------------------------//
+            labelsFile = new Labels(mPath);
+            //-------------------------------------------------------------------------------------------------//
 
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
+            mHandler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
                 /*
                     display a newline separated list of individual names
                  */
-                uniqueNames.clear();
-                String tempName = msg.obj.toString();
-                if (!(tempName.equals("Unknown"))) {
-                    tempName = capitalize(tempName);
-                    uniqueNames.add(tempName);
-                    uniqueNamesArray = uniqueNames.toArray(new String[uniqueNames.size()]);
-                    StringBuilder strBuilder = new StringBuilder();
-                    strBuilder.append(uniqueNamesArray[0]);
-                    for (int i = 0; i < uniqueNamesArray.length; i++) {
-                        strBuilder.append(uniqueNamesArray[i] + "\n");
-                    }
-                    String textToDisplay = strBuilder.toString();
-                    results.setText(textToDisplay);
-                }
-                else
-                {
-                    results.setText("");
-                    results.append("Unknown" + "\n");
-                }
-            }
-        };
+                    uniqueNames.clear();
+                    String tempName = msg.obj.toString();
+                    if (!(tempName.equals("Unknown"))) {
+                        tempName = capitalize(tempName);
+                        uniqueNames.add(tempName);
+                        uniqueNamesArray = uniqueNames.toArray(new String[uniqueNames.size()]);
+                        StringBuilder strBuilder = new StringBuilder();
+                        strBuilder.append(uniqueNamesArray[0]);
+                        for (int i = 0; i < uniqueNamesArray.length; i++) {
+                            strBuilder.append(uniqueNamesArray[i] + "\n");
+                        }
+                        String textToDisplay = strBuilder.toString();
+                        results.setText(textToDisplay);
 
-        scan.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b) {
-                    if(!fr.canPredict()) {
-                        scan.setChecked(false);
-                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.SCanntoPredic), Toast.LENGTH_LONG).show();
-                        return;
+//!!!!!!!!!!!!!!!!!!!!!!//-----------CODIGO PARA REGISTRAR A PERSONA RECONOCIDA [REGISTRA FECHA]!!!!!!!!-------//
+                        if (!textToDisplay.trim().equals("**Unknown****Unknown**"))
+                        {
+                            Toast.makeText(getApplicationContext(),textToDisplay, Toast.LENGTH_LONG).show();
+                            finish();
+                        }
+//!!!!!!!!!!!!!!!!!!!!!!//-------------------------------------------------------------------------------------//
+                    } else {
+                        results.setText("");
+                        results.append("Unknown" + "\n");
                     }
-                    faceState = SEARCHING;
                 }
-                else {
-                    faceState = IDLE;
-                }
-            }
-        });
+            };
 
-        boolean success=(new File(mPath)).mkdirs();
-        if (!success)
-        {
-            Log.e("Error","Error creating directory");
+
+            scan.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (b) {
+                        if (!fr.canPredict()) {
+                            scan.setChecked(false);
+                            Toast.makeText(getApplicationContext(), getResources().getString(R.string.SCanntoPredic), Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        faceState = SEARCHING;
+                    } else {
+                        faceState = IDLE;
+                    }
+                }
+            });
+
+            boolean success = (new File(mPath)).mkdirs();
+            if (!success) {
+                Log.e("Error", "Error creating directory");
+            }
+
+            Button submit = (Button) findViewById(R.id.submit);
+            submit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (uniqueNames.size() > 0) {
+                        Intent intent = new Intent(Recognize.this, ReviewResults.class);
+                        intent.putExtra("list", uniqueNamesArray);
+                        startActivity(intent);
+                    } else {
+                        Toast.makeText(Recognize.this, "Empty list cannot be sent further", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
         }
-
-        Button submit = (Button) findViewById(R.id.submit);
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(uniqueNames.size() > 0) {
-                    Intent intent = new Intent(Recognize.this, ReviewResults.class);
-                    intent.putExtra("list", uniqueNamesArray);
-                    startActivity(intent);
-                }
-                else {
-                    Toast.makeText(Recognize.this, "Empty list cannot be sent further", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
     }
 
     public String conectar(String idemp) {
@@ -425,187 +559,209 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         {
             Intent intent = getIntent();
             String idempleado = intent.getStringExtra("IDEMPLEADO");
+            String nombreemp  = intent.getStringExtra("NOMBREEMPLEADO");
 
-            resultString = conectar(idempleado);
+            if (modoremoto.equals("NO")) {
+                guarda10fotoempleado10fotodefault(nombreemp);
+            } else {
 
-            if (!resultString.equals("")){
-                /*---------------------GUARDAR ROSTROS 10 IMAGENES JPG----------------------------*/
-                String datosempleados = resultString;
+                resultString = conectar(idempleado);
 
-                if (!datosempleados.trim().equals("")) {
+                if (!resultString.equals("")) {
+                    /*---------------------GUARDAR ROSTROS 10 IMAGENES JPG----------------------------*/
+                    String datosempleados = resultString;
 
-                    try {
+                    if (!datosempleados.trim().equals("")) {
 
-                        String substr = datosempleados.substring(0, datosempleados.indexOf("<"));
-                        datosempleados = datosempleados.substring(datosempleados.indexOf("<"));
-                        int i = Integer.parseInt(substr);
+                        try {
 
-                        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                        factory.setNamespaceAware(true);
-                        XmlPullParser xpp = factory.newPullParser();
+                            String substr = datosempleados.substring(0, datosempleados.indexOf("<"));
+                            datosempleados = datosempleados.substring(datosempleados.indexOf("<"));
+                            int i = Integer.parseInt(substr);
 
-                        xpp.setInput(new StringReader(datosempleados));
+                            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                            factory.setNamespaceAware(true);
+                            XmlPullParser xpp = factory.newPullParser();
 
-                        xpp.next();
-                        int eventType = xpp.getEventType();
+                            xpp.setInput(new StringReader(datosempleados));
 
-                        int c = 0;
+                            xpp.next();
+                            int eventType = xpp.getEventType();
 
-                        IMAGE1 ="";IMAGE2="";IMAGE3="";IMAGE4="";IMAGE5="";IMAGE6="";IMAGE7="";
-                        IMAGE8 ="";IMAGE9="";IMAGE10 = "";
+                            int c = 0;
 
-                        IMAGEDEFAULT1 ="";IMAGEDEFAULT2 ="";IMAGEDEFAULT3 ="";IMAGEDEFAULT4 ="";
-                        IMAGEDEFAULT5 ="";IMAGEDEFAULT6 ="";IMAGEDEFAULT7 ="";IMAGEDEFAULT8 ="";
-                        IMAGEDEFAULT9 ="";IMAGEDEFAULT10 ="";
+                            IMAGE1 = "";
+                            IMAGE2 = "";
+                            IMAGE3 = "";
+                            IMAGE4 = "";
+                            IMAGE5 = "";
+                            IMAGE6 = "";
+                            IMAGE7 = "";
+                            IMAGE8 = "";
+                            IMAGE9 = "";
+                            IMAGE10 = "";
 
-                        NOMBRES = "";
+                            IMAGEDEFAULT1 = "";
+                            IMAGEDEFAULT2 = "";
+                            IMAGEDEFAULT3 = "";
+                            IMAGEDEFAULT4 = "";
+                            IMAGEDEFAULT5 = "";
+                            IMAGEDEFAULT6 = "";
+                            IMAGEDEFAULT7 = "";
+                            IMAGEDEFAULT8 = "";
+                            IMAGEDEFAULT9 = "";
+                            IMAGEDEFAULT10 = "";
 
-                        String text = "";
-                        String empleados = "";
-                        String foto1 = "";
-                        String foto2 = "";
-                        String foto3 = "";
-                        String foto4 = "";
-                        String foto5 = "";
-                        String foto6 = "";
-                        String foto7 = "";
-                        String foto8 = "";
-                        String foto9 = "";
-                        String foto10 = "";
+                            NOMBRES = "";
 
-                        String fotodefault1 = "";
-                        String fotodefault2 = "";
-                        String fotodefault3 = "";
-                        String fotodefault4 = "";
-                        String fotodefault5 = "";
-                        String fotodefault6 = "";
-                        String fotodefault7 = "";
-                        String fotodefault8 = "";
-                        String fotodefault9 = "";
-                        String fotodefault10 = "";
+                            String text = "";
+                            String empleados = "";
+                            String foto1 = "";
+                            String foto2 = "";
+                            String foto3 = "";
+                            String foto4 = "";
+                            String foto5 = "";
+                            String foto6 = "";
+                            String foto7 = "";
+                            String foto8 = "";
+                            String foto9 = "";
+                            String foto10 = "";
 
-                        while (eventType != XmlPullParser.END_DOCUMENT) {
-                            String tagname = xpp.getName();
-                            switch (eventType) {
-                                case XmlPullParser.START_TAG:
-                                    if (tagname.equalsIgnoreCase("SERVICES")) {
-                                        // create a new instance of employee
-                                        //employee = new Employee();
-                                    }
-                                    break;
+                            String fotodefault1 = "";
+                            String fotodefault2 = "";
+                            String fotodefault3 = "";
+                            String fotodefault4 = "";
+                            String fotodefault5 = "";
+                            String fotodefault6 = "";
+                            String fotodefault7 = "";
+                            String fotodefault8 = "";
+                            String fotodefault9 = "";
+                            String fotodefault10 = "";
 
-                                case XmlPullParser.TEXT:
-                                    text = xpp.getText();
-                                    break;
+                            while (eventType != XmlPullParser.END_DOCUMENT) {
+                                String tagname = xpp.getName();
+                                switch (eventType) {
+                                    case XmlPullParser.START_TAG:
+                                        if (tagname.equalsIgnoreCase("SERVICES")) {
+                                            // create a new instance of employee
+                                            //employee = new Employee();
+                                        }
+                                        break;
 
-                                case XmlPullParser.END_TAG:
-                                    if (tagname.equalsIgnoreCase("SERVICES")) {
-                                        NOMBRES = empleados;
-                                        IMAGE1 = foto1;
-                                        IMAGE2 = foto2;
-                                        IMAGE3 = foto3;
-                                        IMAGE4 = foto4;
-                                        IMAGE5 = foto5;
-                                        IMAGE6 = foto6;
-                                        IMAGE7 = foto7;
-                                        IMAGE8 = foto8;
-                                        IMAGE9 = foto9;
-                                        IMAGE10 = foto10;
+                                    case XmlPullParser.TEXT:
+                                        text = xpp.getText();
+                                        break;
 
-                                        IMAGEDEFAULT1 = fotodefault1;
-                                        IMAGEDEFAULT2 = fotodefault2;
-                                        IMAGEDEFAULT3 = fotodefault3;
-                                        IMAGEDEFAULT4 = fotodefault4;
-                                        IMAGEDEFAULT5 = fotodefault5;
-                                        IMAGEDEFAULT6 = fotodefault6;
-                                        IMAGEDEFAULT7 = fotodefault7;
-                                        IMAGEDEFAULT8 = fotodefault8;
-                                        IMAGEDEFAULT9 = fotodefault9;
-                                        IMAGEDEFAULT10 = fotodefault10;
-                                        c++;
+                                    case XmlPullParser.END_TAG:
+                                        if (tagname.equalsIgnoreCase("SERVICES")) {
+                                            NOMBRES = empleados;
+                                            IMAGE1 = foto1;
+                                            IMAGE2 = foto2;
+                                            IMAGE3 = foto3;
+                                            IMAGE4 = foto4;
+                                            IMAGE5 = foto5;
+                                            IMAGE6 = foto6;
+                                            IMAGE7 = foto7;
+                                            IMAGE8 = foto8;
+                                            IMAGE9 = foto9;
+                                            IMAGE10 = foto10;
 
-                                    } else if (tagname.equalsIgnoreCase("NOMBREEMPLEADO")) {
-                                        empleados = empleados + text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO1BASE64")) {
-                                        foto1 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO2BASE64")) {
-                                        foto2 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO3BASE64")) {
-                                        foto3 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO4BASE64")) {
-                                        foto4 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO5BASE64")) {
-                                        foto5 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO6BASE64")) {
-                                        foto6 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO7BASE64")) {
-                                        foto7 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO8BASE64")) {
-                                        foto8 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO9BASE64")) {
-                                        foto9 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTO10BASE64")) {
-                                        foto10 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT1BASE64")) {
-                                        fotodefault1 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT2BASE64")) {
-                                        fotodefault2 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT3BASE64")) {
-                                        fotodefault3 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT4BASE64")) {
-                                        fotodefault4 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT5BASE64")) {
-                                        fotodefault5 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT6BASE64")) {
-                                        fotodefault6 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT7BASE64")) {
-                                        fotodefault7 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT8BASE64")) {
-                                        fotodefault8 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT9BASE64")) {
-                                        fotodefault9 = text;
-                                    } else if (tagname.equalsIgnoreCase("FOTODEFAULT10BASE64")) {
-                                        fotodefault10 = text;
-                                    }
-                                    break;
+                                            IMAGEDEFAULT1 = fotodefault1;
+                                            IMAGEDEFAULT2 = fotodefault2;
+                                            IMAGEDEFAULT3 = fotodefault3;
+                                            IMAGEDEFAULT4 = fotodefault4;
+                                            IMAGEDEFAULT5 = fotodefault5;
+                                            IMAGEDEFAULT6 = fotodefault6;
+                                            IMAGEDEFAULT7 = fotodefault7;
+                                            IMAGEDEFAULT8 = fotodefault8;
+                                            IMAGEDEFAULT9 = fotodefault9;
+                                            IMAGEDEFAULT10 = fotodefault10;
+                                            c++;
 
-                                default:
-                                    break;
+                                        } else if (tagname.equalsIgnoreCase("NOMBREEMPLEADO")) {
+                                            empleados = empleados + text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO1BASE64")) {
+                                            foto1 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO2BASE64")) {
+                                            foto2 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO3BASE64")) {
+                                            foto3 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO4BASE64")) {
+                                            foto4 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO5BASE64")) {
+                                            foto5 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO6BASE64")) {
+                                            foto6 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO7BASE64")) {
+                                            foto7 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO8BASE64")) {
+                                            foto8 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO9BASE64")) {
+                                            foto9 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTO10BASE64")) {
+                                            foto10 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT1BASE64")) {
+                                            fotodefault1 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT2BASE64")) {
+                                            fotodefault2 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT3BASE64")) {
+                                            fotodefault3 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT4BASE64")) {
+                                            fotodefault4 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT5BASE64")) {
+                                            fotodefault5 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT6BASE64")) {
+                                            fotodefault6 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT7BASE64")) {
+                                            fotodefault7 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT8BASE64")) {
+                                            fotodefault8 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT9BASE64")) {
+                                            fotodefault9 = text;
+                                        } else if (tagname.equalsIgnoreCase("FOTODEFAULT10BASE64")) {
+                                            fotodefault10 = text;
+                                        }
+                                        break;
+
+                                    default:
+                                        break;
+                                }
+                                eventType = xpp.next();
                             }
-                            eventType = xpp.next();
+
+                        } catch (XmlPullParserException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            finish();
+                        } finally {
+                            savebitmap(NOMBRES + "-1", IMAGE1);
+                            savebitmap(NOMBRES + "-2", IMAGE2);
+                            savebitmap(NOMBRES + "-3", IMAGE3);
+                            savebitmap(NOMBRES + "-4", IMAGE4);
+                            savebitmap(NOMBRES + "-5", IMAGE5);
+                            savebitmap(NOMBRES + "-6", IMAGE6);
+                            savebitmap(NOMBRES + "-7", IMAGE7);
+                            savebitmap(NOMBRES + "-8", IMAGE8);
+                            savebitmap(NOMBRES + "-9", IMAGE9);
+                            savebitmap(NOMBRES + "-10", IMAGE10);
+
+                            savebitmap("DEFAULT-" + "1", IMAGEDEFAULT1);
+                            savebitmap("DEFAULT-" + "2", IMAGEDEFAULT2);
+                            savebitmap("DEFAULT-" + "3", IMAGEDEFAULT3);
+                            savebitmap("DEFAULT-" + "4", IMAGEDEFAULT4);
+                            savebitmap("DEFAULT-" + "5", IMAGEDEFAULT5);
+                            savebitmap("DEFAULT-" + "6", IMAGEDEFAULT6);
+                            savebitmap("DEFAULT-" + "7", IMAGEDEFAULT7);
+                            savebitmap("DEFAULT-" + "8", IMAGEDEFAULT8);
+                            savebitmap("DEFAULT-" + "9", IMAGEDEFAULT9);
+                            savebitmap("DEFAULT-" + "10", IMAGEDEFAULT10);
                         }
-
-                    } catch (XmlPullParserException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        finish();
-                    } finally {
-                        savebitmap(NOMBRES+"-1",IMAGE1);
-                        savebitmap(NOMBRES+"-2",IMAGE2);
-                        savebitmap(NOMBRES+"-3",IMAGE3);
-                        savebitmap(NOMBRES+"-4",IMAGE4);
-                        savebitmap(NOMBRES+"-5",IMAGE5);
-                        savebitmap(NOMBRES+"-6",IMAGE6);
-                        savebitmap(NOMBRES+"-7",IMAGE7);
-                        savebitmap(NOMBRES+"-8",IMAGE8);
-                        savebitmap(NOMBRES+"-9",IMAGE9);
-                        savebitmap(NOMBRES+"-10",IMAGE10);
-
-                        savebitmap("DEFAULT-"+"1",IMAGEDEFAULT1);
-                        savebitmap("DEFAULT-"+"2",IMAGEDEFAULT2);
-                        savebitmap("DEFAULT-"+"3",IMAGEDEFAULT3);
-                        savebitmap("DEFAULT-"+"4",IMAGEDEFAULT4);
-                        savebitmap("DEFAULT-"+"5",IMAGEDEFAULT5);
-                        savebitmap("DEFAULT-"+"6",IMAGEDEFAULT6);
-                        savebitmap("DEFAULT-"+"7",IMAGEDEFAULT7);
-                        savebitmap("DEFAULT-"+"8",IMAGEDEFAULT8);
-                        savebitmap("DEFAULT-"+"9",IMAGEDEFAULT9);
-                        savebitmap("DEFAULT-"+"10",IMAGEDEFAULT10);
                     }
+                    /*--------------------------------------------------------------------------------*/
+                    band = "EnableScann";
+                    FACESFILEEXIST = "OK";
                 }
-                /*--------------------------------------------------------------------------------*/
-                band= "EnableScann";
             }
 
             resultString = "OK";
@@ -697,6 +853,8 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        if(null !=mOpenCvCameraView)
         mOpenCvCameraView.disableView();
     }
 

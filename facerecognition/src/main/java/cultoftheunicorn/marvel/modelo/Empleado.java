@@ -32,6 +32,7 @@ public class Empleado {
     private long mIdDispositivo;
     private String mRegistro;
     private String mSyncronizado;
+    private long mIdproyecto;
 
     public Empleado() {
 
@@ -40,7 +41,7 @@ public class Empleado {
     public Empleado(String mNombre,String mCodigoEmpleado,String mDomicilio,String mCiudad,String mTelefono,String mCuentaContable,String mFechaAlta,
                     String mFechaBaja,String mImss,String mStatus,byte[] mFotoEmpleado,long mIdEstacion,long mTurno,byte[] mFotoEmpleado1,byte[] mFotoEmpleado2,
                     byte[] mFotoEmpleado3,byte[] mFotoEmpleado4,byte[] mFotoEmpleado5,byte[] mFotoEmpleado6,byte[] mFotoEmpleado7,byte[] mFotoEmpleado8,
-                    byte[] mFotoEmpleado9,byte[] mFotoEmpleado10,long mIdDispositivo,String mRegistro,String mSyncronizado) {
+                    byte[] mFotoEmpleado9,byte[] mFotoEmpleado10,long mIdDispositivo,String mRegistro,String mSyncronizado, long mIdproyecto) {
         this.mNombre = mNombre;
         this.mCodigoEmpleado = mCodigoEmpleado;
         this.mDomicilio = mDomicilio;
@@ -67,6 +68,7 @@ public class Empleado {
         this.mIdDispositivo = mIdDispositivo;
         this.mRegistro = mRegistro;
         this.mSyncronizado = mSyncronizado;
+        this.mIdproyecto = mIdproyecto;
     }
 
     public long getId() {
@@ -283,5 +285,13 @@ public class Empleado {
 
     public void setSyncronizado(String mSyncronizado) {
         this.mSyncronizado = mSyncronizado;
+    }
+
+    public long getIdproyecto() {
+        return mIdproyecto;
+    }
+
+    public void setIdproyecto(long mIdproyecto) {
+        this.mIdproyecto = mIdproyecto;
     }
 }

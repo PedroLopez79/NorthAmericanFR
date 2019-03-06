@@ -27,13 +27,21 @@ public  class PersonRecognizer {
 	int count=0;
 	Labels labelsFile;
 
-	static  final int WIDTH= 128;
-	static  final int HEIGHT= 128;
-	private int mProb=999;
+	static  final int WIDTH= 220;
+    static  final int HEIGHT= 220;
+    private int mProb=999;
 
 
 	PersonRecognizer(String path) {
+		//faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(4,8,8,8,200);
+		//faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(3,8,8,8,200);
+
 		faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(2,8,8,8,200);
+
+		//faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(1,8,8,8,200);
+		//faceRecognizer = com.googlecode.javacv.cpp.opencv_contrib.createFisherFaceRecognizer();
+
+		//faceRecognizer = com.googlecode.javacv.cpp.opencv_contrib.createEigenFaceRecognizer();
 		// path=Environment.getExternalStorageDirectory()+"/facerecog/faces/";
 		mPath=path;
 		labelsFile= new Labels(mPath);
@@ -148,11 +156,16 @@ public  class PersonRecognizer {
 			mProb=(int)p[0];
 		else
 			mProb=-1;
-		if ((n[0] != -1)&&(p[0]<55))
+		//if ((n[0] != -1)&&(p[0]<50))
+
+		if ((n[0] != -1)&&(p[0]<47))
 		//if (n[0] != -1)
 			return labelsFile.get(n[0]);
 		else
-			return "Unknown";
+			return "**Unknown**";
+
+		   //return "Unknown- Score .-" + String.valueOf(p[0]) + "->" + String.valueOf(n[0]);
+		   //return "Person.-" + " [" + labelsFile.get(n[0]) + "]. " ;
 	}
 
 
@@ -212,13 +225,10 @@ public  class PersonRecognizer {
 
 	public void load() {
 		train();
-
 	}
 
 	public int getProb() {
 		// TODO Auto-generated method stub
 		return mProb;
 	}
-
-
 }

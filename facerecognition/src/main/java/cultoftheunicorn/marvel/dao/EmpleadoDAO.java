@@ -46,7 +46,8 @@ public class EmpleadoDAO {
             AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO10,
             AdminSqLiteOpenHelper.COLUMN_IDDISPOSITIVO,
             AdminSqLiteOpenHelper.COLUMN_REGISTRO,
-            AdminSqLiteOpenHelper.COLUMN_SYNCRONIZADO
+            AdminSqLiteOpenHelper.COLUMN_SYNCRONIZADO,
+            AdminSqLiteOpenHelper.COLUMN_IDPROYECTO
     };
 
     public EmpleadoDAO(Context context){
@@ -72,7 +73,7 @@ public class EmpleadoDAO {
     public Empleado createEmpleado(String Nombre,String CodigoEmpleado,String Domicilio,String Ciudad,String Telefono,String CuentaContable,String FechaAlta,
                                   String FechaBaja,String Imss,String Status,byte[] FotoEmpleado,long IdEstacion,long Turno,byte[] FotoEmpleado1,byte[] FotoEmpleado2,
                                   byte[] FotoEmpleado3,byte[] FotoEmpleado4,byte[] FotoEmpleado5,byte[] FotoEmpleado6,byte[] FotoEmpleado7,byte[] FotoEmpleado8,
-                                  byte[] FotoEmpleado9,byte[] FotoEmpleado10,long IdDispositivo,String Registro,String Syncronizado) {
+                                  byte[] FotoEmpleado9,byte[] FotoEmpleado10,long IdDispositivo,String Registro,String Syncronizado, long IdProyecto) {
         ContentValues values = new ContentValues();
         values.put(AdminSqLiteOpenHelper.COLUMN_NOMBRE, Nombre);
         values.put(AdminSqLiteOpenHelper.COLUMN_CODIGOEMPLEADO, CodigoEmpleado);
@@ -87,19 +88,20 @@ public class EmpleadoDAO {
         values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO, FotoEmpleado);
         values.put(AdminSqLiteOpenHelper.COLUMN_IDESTACION, IdEstacion);
         values.put(AdminSqLiteOpenHelper.COLUMN_TURNO, Turno);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT1, FotoEmpleado1);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT2, FotoEmpleado2);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT3, FotoEmpleado3);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT4, FotoEmpleado4);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT5, FotoEmpleado5);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT6, FotoEmpleado6);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT7, FotoEmpleado7);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT8, FotoEmpleado8);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT9, FotoEmpleado9);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FOTODEFAULT10, FotoEmpleado10);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO1, FotoEmpleado1);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO2, FotoEmpleado2);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO3, FotoEmpleado3);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO4, FotoEmpleado4);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO5, FotoEmpleado5);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO6, FotoEmpleado6);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO7, FotoEmpleado7);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO8, FotoEmpleado8);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO9, FotoEmpleado9);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FOTOEMPLEADO10, FotoEmpleado10);
         values.put(AdminSqLiteOpenHelper.COLUMN_IDDISPOSITIVO, IdDispositivo);
         values.put(AdminSqLiteOpenHelper.COLUMN_REGISTRO, Registro);
         values.put(AdminSqLiteOpenHelper.COLUMN_SYNCRONIZADO, Syncronizado);
+        values.put(AdminSqLiteOpenHelper.COLUMN_IDPROYECTO, IdProyecto);
         long insertId = mDatabase
                 .insert(AdminSqLiteOpenHelper.TABLE_EMPLEADOS, null, values);
         Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_EMPLEADOS, mAllColumns,
@@ -111,6 +113,14 @@ public class EmpleadoDAO {
         return newEmpleado;
     }
 
+    public void updateEmployee(EmpleadoDAO employee, long ids) {
+        System.out.println("the updated employee has te id: " + ids);
+        ContentValues args = new ContentValues();
+        args.put("SYNCRONIZADO", "SI");
+        mDatabase.update(AdminSqLiteOpenHelper.TABLE_EMPLEADOS, args,AdminSqLiteOpenHelper.COLUMN_IDEMPLEADO
+                + " = " + ids, null);
+    }
+
     public void deleteEmployee(Empleado employee) {
         long id = employee.getId();
         System.out.println("the deleted employee has the id: " + id);
@@ -118,11 +128,60 @@ public class EmpleadoDAO {
                 + " = " + id, null);
     }
 
+    public List<Empleado> getAllEmpleadoProyecto(long PROYECTOID) {
+        List<Empleado> listEmpleadoProyecto = new ArrayList<>();
+
+        Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_EMPLEADOS, mAllColumns,
+                AdminSqLiteOpenHelper.COLUMN_IDPROYECTO + " = ?",
+                new String[] { String.valueOf(PROYECTOID) }, null, null, null);
+
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Empleado empleado = cursorToEmpleado(cursor);
+                listEmpleadoProyecto.add(empleado);
+                cursor.moveToNext();
+            }
+        }catch (Exception e) {
+            Log.d(TAG, "Error while trying to get posts from database");
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return listEmpleadoProyecto;
+    }
+
+    public List<Empleado> getAllEmpleadoxID(long IDEMPLEADO) {
+        List<Empleado> listEmpleadoProyecto = new ArrayList<>();
+
+        Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_EMPLEADOS, mAllColumns,
+                AdminSqLiteOpenHelper.COLUMN_IDEMPLEADOS + " = ?",
+                new String[] { String.valueOf(IDEMPLEADO) }, null, null, null);
+
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Empleado empleado = cursorToEmpleado(cursor);
+                listEmpleadoProyecto.add(empleado);
+                cursor.moveToNext();
+            }
+        }catch (Exception e) {
+            Log.d(TAG, "Error while trying to get posts from database");
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return listEmpleadoProyecto;
+    }
+
     public List<Empleado> getAllEmpleado() {
         List<Empleado> listEmpleado= new ArrayList<Empleado>();
 
         Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_EMPLEADOS, mAllColumns,
                 null, null, null, null, null);
+
         //String POSTS_SELECT_QUERY =
         //        String.format("SELECT * FROM %s",
         //                AdminSqLiteOpenHelper.TABLE_EMPLEADOS);
@@ -192,6 +251,7 @@ public class EmpleadoDAO {
         empleado.setIdDispositivo(cursor.getLong(24));
         empleado.setRegistro(cursor.getString(25));
         empleado.setSyncronizado(cursor.getString(26));
+        empleado.setIdproyecto(cursor.getLong(27));
 
         return empleado;
     }

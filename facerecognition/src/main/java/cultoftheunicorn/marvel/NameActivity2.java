@@ -35,10 +35,12 @@ public class NameActivity2 extends AppCompatActivity {
     String TAG = "Response";
     String resultString;
 
+    String modoremoto = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_name2);
+        setContentView(R.layout.activity_main2);
 
         // Declaring Server ip, username, database name and password
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -53,8 +55,9 @@ public class NameActivity2 extends AppCompatActivity {
         db = prefs.getString("dbservidor","AmericanGreenHouseCheck");
         un = prefs.getString("usuarioservidor","sa");
         pass = prefs.getString("passwordservidor","IAN32");
-
         numestacion = prefs.getString("numeroestacion","2601");
+        modoremoto= prefs.getString("modoremoto", "SI");
+
         name = (EditText) findViewById(R.id.name);
         apellidos = (EditText) findViewById(R.id.apellido);
 
@@ -142,17 +145,27 @@ public class NameActivity2 extends AppCompatActivity {
                 z = "Por favor ingrese Nombres y Apellidos";
             else
             {
-                resultString = conectar();
-
-                if (!resultString.equals("-1"))
-                {
-                    z = "Consulta obtenida";
-                    isSuccess = true;
-
+                if (modoremoto.equals("NO")) {
+                    resultString= "BUSCAR";
                     Intent intent = new Intent(NameActivity2.this, ListaEmpleados2.class);
                     intent.putExtra("resultstring", resultString);
-                    intent.putExtra("name", Nombres + ' ' + Apellidos);
+                    intent.putExtra("Nombres", Nombres);
+                    intent.putExtra("Apellidos", Apellidos);
                     startActivityForResult(intent, SIGNATURE_ACTIVITY);
+
+                } else {
+
+                    resultString = conectar();
+
+                    if (!resultString.equals("-1")) {
+                        z = "Consulta obtenida";
+                        isSuccess = true;
+
+                        Intent intent = new Intent(NameActivity2.this, ListaEmpleados2.class);
+                        intent.putExtra("resultstring", resultString);
+                        intent.putExtra("name", Nombres + ' ' + Apellidos);
+                        startActivityForResult(intent, SIGNATURE_ACTIVITY);
+                    }
                 }
             }
             return z;
