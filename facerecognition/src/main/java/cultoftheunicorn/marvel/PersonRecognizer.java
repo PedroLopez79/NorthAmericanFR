@@ -27,9 +27,12 @@ public  class PersonRecognizer {
 	int count=0;
 	Labels labelsFile;
 
-	static  final int WIDTH= 220;
-    static  final int HEIGHT= 220;
-    private int mProb=999;
+	static  final int WIDTH= 225;
+    static  final int HEIGHT= 225;
+	//static  final int WIDTH= 128;
+	//static  final int HEIGHT= 128;
+    private int mProb=99;
+    //private int mProb=999;
 
 
 	PersonRecognizer(String path) {
@@ -45,8 +48,6 @@ public  class PersonRecognizer {
 		// path=Environment.getExternalStorageDirectory()+"/facerecog/faces/";
 		mPath=path;
 		labelsFile= new Labels(mPath);
-
-
 	}
 
 	void add(Mat m, String description) {
@@ -93,7 +94,6 @@ public  class PersonRecognizer {
 		IplImage grayImg;
 
 		int i1=mPath.length();
-
 
 		for (File image : imageFiles) {
 			String p = image.getAbsolutePath();
@@ -158,13 +158,13 @@ public  class PersonRecognizer {
 			mProb=-1;
 		//if ((n[0] != -1)&&(p[0]<50))
 
-		if ((n[0] != -1)&&(p[0]<47))
+		if ((n[0] != -1)&&(p[0]<=48))
 		//if (n[0] != -1)
-			return labelsFile.get(n[0]);
+			return labelsFile.get(n[0]) + String.valueOf(p[0]) + "->" + String.valueOf(n[0]);
 		else
-			return "**Unknown**";
+			//return "**Unknown**";
 
-		   //return "Unknown- Score .-" + String.valueOf(p[0]) + "->" + String.valueOf(n[0]);
+		   return "Unknown- Score .-" + String.valueOf(p[0]) + "->" + String.valueOf(n[0]);
 		   //return "Person.-" + " [" + labelsFile.get(n[0]) + "]. " ;
 	}
 

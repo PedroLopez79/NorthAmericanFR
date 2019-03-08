@@ -422,7 +422,8 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                         results.setText(textToDisplay);
 
 //!!!!!!!!!!!!!!!!!!!!!!//-----------CODIGO PARA REGISTRAR A PERSONA RECONOCIDA [REGISTRA FECHA]!!!!!!!!-------//
-                        if (!textToDisplay.trim().equals("**Unknown****Unknown**"))
+                        if (!textToDisplay.contains("Unknown"))
+                        //if (!textToDisplay.trim().equals("**Unknown****Unknown**"))
                         {
                             Toast.makeText(getApplicationContext(),textToDisplay, Toast.LENGTH_LONG).show();
                             finish();
@@ -791,7 +792,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
             if (Math.round(height * mRelativeFaceSize) > 0) {
                 mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
             }
-            //  mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
+              //mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
         }
 
         MatOfRect faces = new MatOfRect();
