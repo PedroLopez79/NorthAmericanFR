@@ -1,5 +1,6 @@
 package cultoftheunicorn.marvel;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -11,7 +12,10 @@ import android.widget.Button;
 
 import org.opencv.cultoftheunicorn.marvel.R;
 
+import java.util.List;
+
 import cultoftheunicorn.marvel.modelo.CheckInCheckOut;
+import cultoftheunicorn.marvel.modelo.Empleado;
 
 public class CheckinCheckout extends AppCompatActivity {
 
@@ -20,6 +24,32 @@ public class CheckinCheckout extends AppCompatActivity {
     String NOMBREEMPLEADO = "";
 
     public static final int SIGNATURE_ACTIVITY = 1;
+    private List<CheckinCheckout> mListCheckInCheckOut;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(resultCode) {
+
+            //----------------OBTENER RESULTCODE PARA SABER SI ES REGISTRAR CHECKIN O CHECKOUT----//
+            case -100:
+                super.onActivityResult(requestCode, resultCode, data);
+                String NOMBREEMPLEADO = data.getStringExtra("NOMBREEMPLEADO");
+                String FECHA = data.getStringExtra("FECHA");
+                String IDPROYECTO = data.getStringExtra("IDPROYECTO");
+                String CHECK = data.getStringExtra("CHECK");
+
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("NOMBREEMPLEADO", NOMBREEMPLEADO);
+                resultIntent.putExtra("IDEMPLEADO", IDEMPLEADO);
+                resultIntent.putExtra("FECHA", String.valueOf(FECHA));
+                resultIntent.putExtra("IDPROYECTO", IDPROYECTO);
+                resultIntent.putExtra("CHECK", CHECK);
+                setResult(-100, resultIntent);
+                finish();            // to close this activity
+                break;
+            //------------------------------------------------------------------------------------//
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

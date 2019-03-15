@@ -15,10 +15,11 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_CHECKINCHECKOUTID  =  "CHECKINCHECKOUTID";
     public static final String COLUMN_CPROYECTOID        =  "PROYECTOID";
     public static final String COLUMN_CEMPLEADOID        =  "EMPLEADOID";
-    public static final String COLUMN_FCHECKIN           =  "CHECKIN";
-    public static final String COLUMN_FCHECKOUT          =  "CHECKOUT";
+    public static final String COLUMN_FCHECKS            =  "CHECKS";
     public static final String COLUMN_CFECHA             =  "FECHA";
     public static final String COLUMN_CHECKINHECHO       =  "CHECKINHECHO";
+    public static final String COLUMN_CSYNCRONIZADO       =  "SYNCRONIZADO";
+    public static final String COLUMN_CREGISTRO           =  "REGISTRO";
 
     //columnas tabla proyectos
     public static final String TABLE_PROYECTO       =  "Proyecto";
@@ -148,10 +149,11 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
             + COLUMN_CHECKINCHECKOUTID     + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + COLUMN_CPROYECTOID   + " INT, "
             + COLUMN_CEMPLEADOID   + " INT, "
-            + COLUMN_FCHECKIN      + " NUMERIC, "
-            + COLUMN_FCHECKOUT     + " NUMERIC, "
+            + COLUMN_FCHECKS       + " NUMERIC, "
             + COLUMN_CFECHA        + " NUMERIC, "
-            + COLUMN_CHECKINHECHO  + " TEXT"
+            + COLUMN_CHECKINHECHO  + " TEXT, "
+            + COLUMN_CSYNCRONIZADO + " TEXT, "
+            + COLUMN_CREGISTRO     + " TEXT "
             + ");";
 
     public AdminSqLiteOpenHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {

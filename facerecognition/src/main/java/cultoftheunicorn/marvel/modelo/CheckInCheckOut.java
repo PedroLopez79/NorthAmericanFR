@@ -7,23 +7,25 @@ public class CheckInCheckOut {
     private long mId;
     private long mProyectoID;
     private long mEmpleadoID;
-    private long mCheckIn;
-    private long mCheckOut;
+    private long mChecks;
     private long mFecha;
     private String mCheckInHecho;
+    private String mSyncronizado;
+    private String mRegistro;
 
     public CheckInCheckOut() {
 
     }
 
-    public CheckInCheckOut(long mProyectoID, long mEmpleadoID, long mCheckIn, long mCheckOut, long mFecha, String mCheckInHecho)
+    public CheckInCheckOut(long mProyectoID, long mEmpleadoID, long mChecks, long mFecha, String mCheckInHecho, String mSyncronizado, String mRegistro)
     {
         this.mProyectoID   = mProyectoID;
         this.mEmpleadoID   = mEmpleadoID;
-        this.mCheckIn      = mCheckIn;
-        this.mCheckOut     = mCheckOut;
+        this.mChecks       = mChecks;
         this.mFecha        = mFecha;
         this.mCheckInHecho = mCheckInHecho;
+        this.mSyncronizado = mSyncronizado;
+        this.mRegistro     = mRegistro;
     }
 
     public long getId() {
@@ -50,21 +52,12 @@ public class CheckInCheckOut {
         this.mEmpleadoID= mEmpleadoID;
     }
 
-    public long getCheckIn() {
-        return mCheckIn;
+    public long getChecks() {
+        return mChecks;
     }
 
-    public void setCheckIn(long mCheckIn) {
-        this.mCheckIn= mCheckIn;
-    }
-
-    public long getCheckOut() {
-        return mCheckOut;
-    }
-
-    public void setCheckOut(long mCheckOut)
-    {
-        this.mCheckOut= mCheckOut;
+    public void setChecks(long mChecks) {
+        this.mChecks= mChecks;
     }
 
     public long getFecha() {
@@ -82,5 +75,19 @@ public class CheckInCheckOut {
     public void setCheckInHecho(String mCheckInHecho)
     {
         this.mCheckInHecho = mCheckInHecho;
+    }
+
+    public String getSyncronizado() { return mSyncronizado; }
+
+    public void setSyncronizado(String mSyncronizado)
+    {
+        this.mSyncronizado = mSyncronizado;
+    }
+
+    public String getRegistro() { return mRegistro; }
+
+    public void setRegistro(String mRegistro)
+    {
+        this.mRegistro = mRegistro;
     }
 }

@@ -22,10 +22,11 @@ public class CheckInCheckOutDAO {
             AdminSqLiteOpenHelper.COLUMN_CHECKINCHECKOUTID,
             AdminSqLiteOpenHelper.COLUMN_CPROYECTOID,
             AdminSqLiteOpenHelper.COLUMN_CEMPLEADOID,
-            AdminSqLiteOpenHelper.COLUMN_FCHECKIN,
-            AdminSqLiteOpenHelper.COLUMN_FCHECKOUT,
+            AdminSqLiteOpenHelper.COLUMN_FCHECKS,
             AdminSqLiteOpenHelper.COLUMN_CFECHA,
-            AdminSqLiteOpenHelper.COLUMN_CHECKINHECHO
+            AdminSqLiteOpenHelper.COLUMN_CHECKINHECHO,
+            AdminSqLiteOpenHelper.COLUMN_CSYNCRONIZADO,
+            AdminSqLiteOpenHelper.COLUMN_CREGISTRO
     };
 
     public CheckInCheckOutDAO(Context context){
@@ -48,18 +49,19 @@ public class CheckInCheckOutDAO {
         mDatabase.close();
     }
 
-    public CheckInCheckOut createCheckInCheckOut(long ProyectoID, long EmpleadoID, long CheckIn, long CheckOut, long Fecha, String CheckInHecho) {
+    public CheckInCheckOut createCheckInCheckOut(long ProyectoID, long EmpleadoID, long Checks, long Fecha, String CheckInHecho, String Syncronizado, String Registro) {
         ContentValues values = new ContentValues();
         values.put(AdminSqLiteOpenHelper.COLUMN_CPROYECTOID, ProyectoID);
         values.put(AdminSqLiteOpenHelper.COLUMN_CEMPLEADOID, EmpleadoID);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FCHECKIN, CheckIn);
-        values.put(AdminSqLiteOpenHelper.COLUMN_FCHECKOUT, CheckOut);
+        values.put(AdminSqLiteOpenHelper.COLUMN_FCHECKS, Checks);
         values.put(AdminSqLiteOpenHelper.COLUMN_CFECHA, Fecha);
         values.put(AdminSqLiteOpenHelper.COLUMN_CHECKINHECHO, CheckInHecho);
+        values.put(AdminSqLiteOpenHelper.COLUMN_CSYNCRONIZADO, Syncronizado);
+        values.put(AdminSqLiteOpenHelper.COLUMN_CREGISTRO, Registro);
         long insertId = mDatabase
                 .insert(AdminSqLiteOpenHelper.TABLE_CHECKINCHECKOUT, null, values);
         Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_CHECKINCHECKOUT, mAllColumns,
-                AdminSqLiteOpenHelper.COLUMN_CPROYECTOID + " = " + insertId, null, null,
+                AdminSqLiteOpenHelper.COLUMN_CHECKINCHECKOUTID + " = " + insertId, null, null,
                 null, null);
         cursor.moveToFirst();
         CheckInCheckOut newCheckInCheckOut = cursorToCheckInCheckOut(cursor);
@@ -77,7 +79,7 @@ public class CheckInCheckOutDAO {
     }
 
     public List<CheckInCheckOut> getAllCheckInCheckOut() {
-        List<CheckInCheckOut> listProyecto= new ArrayList<CheckInCheckOut>();
+        List<CheckInCheckOut> listCheckInCheckOut= new ArrayList<CheckInCheckOut>();
 
         Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_CHECKINCHECKOUT, mAllColumns,
                 null, null, null, null, null);
@@ -91,7 +93,7 @@ public class CheckInCheckOutDAO {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 CheckInCheckOut proyect = cursorToCheckInCheckOut(cursor);
-                listProyecto.add(proyect);
+                listCheckInCheckOut.add(proyect);
                 cursor.moveToNext();
             }
         }catch (Exception e) {
@@ -101,7 +103,50 @@ public class CheckInCheckOutDAO {
                 cursor.close();
             }
         }
-        return listProyecto;
+        return listCheckInCheckOut;
+    }
+
+    public List<CheckInCheckOut> getAllCheckInCheckOutXFecha(long FECHA){
+        List<CheckInCheckOut> listCheckInCheckOutXFecha= new ArrayList<CheckInCheckOut>();
+
+        Cursor cursor = mDatabase.query(AdminSqLiteOpenHelper.TABLE_CHECKINCHECKOUT, mAllColumns,
+                AdminSqLiteOpenHelper.COLUMN_CFECHA + " = ?",
+                new String[] { String.valueOf(FECHA) }, null, null, null);
+
+        try {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                CheckInCheckOut checkincheckout = cursorToCheckInCheckOut(cursor);
+                listCheckInCheckOutXFecha.add(checkincheckout);
+                cursor.moveToNext();
+            }
+        }catch (Exception e) {
+            Log.d(TAG, "Error while trying to get posts from database");
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+
+        return listCheckInCheckOutXFecha;
+    }
+
+    public Cursor getAllCheckInCheckOutXFechaDia(long FECHA, long IDEMPLEADO){
+
+        Cursor cursor = mDatabase.rawQuery("SELECT strftime('%H',(datetime(ChechInCheckOut.CHECKS, 'unixepoch', 'localtime'))) AS HORADIAACTUAL, " +
+                                                "CHECKINHECHO FROM ChechInCheckOut WHERE FECHA = "+ String.valueOf(FECHA) + " AND EMPLEADOID= " +
+                                                String.valueOf(IDEMPLEADO),null);
+
+        return cursor;
+    }
+
+    public Cursor getAllCheckInCheckOutX()
+    {
+        Cursor cursor = mDatabase.rawQuery("SELECT ProyectoID, EmpleadoID, strftime('%Y-%m-%dT%H:%M:%S', (datetime(ChechInCheckOut.CHECKS, 'unixepoch', 'localtime'))) AS CHECKS, " +
+                "strftime('%Y-%m-%dT%H:%M:%S', (datetime(ChechInCheckOut.FECHA, 'unixepoch', 'localtime'))) AS FECHA, " +
+                "CHECKINHECHO FROM ChechInCheckOut", null);
+
+        return cursor;
     }
 
     private CheckInCheckOut cursorToCheckInCheckOut(Cursor cursor) {
@@ -109,10 +154,9 @@ public class CheckInCheckOutDAO {
         checkincheckout.setId(cursor.getLong(0));
         checkincheckout.setProyectoID(cursor.getLong(1));
         checkincheckout.setEmpleadoID(cursor.getLong(2));
-        checkincheckout.setCheckIn(cursor.getLong(3));
-        checkincheckout.setCheckOut(cursor.getLong(4));
-        checkincheckout.setFecha(cursor.getLong(5));
-        checkincheckout.setCheckInHecho(cursor.getString(6));
+        checkincheckout.setChecks(cursor.getLong(3));
+        checkincheckout.setFecha(cursor.getLong(4));
+        checkincheckout.setCheckInHecho(cursor.getString(5));
 
         return checkincheckout;
     }

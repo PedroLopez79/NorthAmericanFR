@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
@@ -47,6 +48,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import cultoftheunicorn.marvel.dao.CheckInCheckOutDAO;
 import cultoftheunicorn.marvel.dao.EmpleadoDAO;
 import cultoftheunicorn.marvel.dao.FotodefaultDAO;
 import cultoftheunicorn.marvel.dao.ProyectoDAO;
@@ -89,6 +91,8 @@ public class MainActivity2 extends AppCompatActivity {
     private List<Empleado> mListEmpleado;
     String NOMBREEMP, CODIGOEMPLEADO, DOMICILIO, CIUDAD, TELEFONO, CUENTACONTABLE, FECHAALTA, FECHABAJA,
             IMSS, STATUS, REGISTRO, SYNCRONIZADO;
+
+    String CHECKPROYECTOID, CHECKEMPLEADOID, CHECKFECHA, CHECKCHECKS, CHECKCHECKINHECHO;
     long IDESTACION, TURNO, IDDISPOSITIVO, IDPROYECTO;
 
     private List<Usuario> mListUsuario;
@@ -760,7 +764,91 @@ public class MainActivity2 extends AppCompatActivity {
         }
 //////////----------------------------------------------------------------------------------------////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////------------------PROCESO PARA GUARDAR EN BASE DE DATOS REMOTA TABLA CHECKINCHECKOUT----////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        CheckInCheckOutDAO checkincheckout = new CheckInCheckOutDAO(this);
+        Cursor cursor = checkincheckout.getAllCheckInCheckOutX();
+
+        cursor.moveToFirst();
+
+        while(!cursor.isAfterLast()) {
+            CHECKPROYECTOID = cursor.getString(0);
+            CHECKEMPLEADOID = cursor.getString(1);
+            CHECKCHECKS = cursor.getString(2);
+            CHECKFECHA = cursor.getString(3);
+            CHECKCHECKINHECHO = cursor.getString(4);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //ALIMENTA REGISTROS PARA GUARDADO EN BD REMOTA///////////////////////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            syncronizationCheckInCheckOutRemoto syncCheckInCheckOutRemoto = new syncronizationCheckInCheckOutRemoto();
+            syncCheckInCheckOutRemoto.execute();
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //agregar ciclo con timeout---------------------------------------------------------//////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            cal = Calendar.getInstance();
+            StartTime = System.currentTimeMillis();
+            currentTime = StartTime;
+            currentTime = cal.getTimeInMillis();
+
+            System.out.println(resultString);
+            while (!resultString.equals("OK")) {
+                System.out.println("Start time is " + StartTime);
+                System.out.println("Current time is " + currentTime);
+                System.out.println("--------------------------------------");
+                System.out.println("Timer will has stopped");
+                resultString = resultString;
+                currentTime++;
+            }
+            if (resultString.equals("NOT OK")) {
+                resultString = "ERROR.- REVISE SU CONECCION INALAMBRICA, O CONECCION CON INTERNET";
+                result = "ERROR.- REVISE SU CONECCION INALAMBRICA, O CONECCION CON INTERNET";
+                return result;
+            }
+            cursor.moveToNext();
+        }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
         return result;
+    }
+
+    public String guardacheckincheckout() {
+        String SOAP_ACTION = "urn:androidserviceIntf-Iandroidservice#registracheckincheckout";
+        String METHOD_NAME = "registracheckincheckout";
+        String NAMESPACE = "urn:androidserviceIntf";
+        String URL = "http://"+ip+":1001/soap/Iandroidservice";
+        String z;
+
+        try {
+            SoapObject Request = new SoapObject(NAMESPACE, METHOD_NAME);
+            Request.addProperty("ProyectoID", CHECKPROYECTOID);
+            Request.addProperty("EmpleadoID", CHECKEMPLEADOID);
+            Request.addProperty("Checks", CHECKCHECKS);
+            Request.addProperty("Fecha", CHECKFECHA);
+            Request.addProperty("CheckInHecho", CHECKCHECKINHECHO);
+
+            SoapSerializationEnvelope soapEnvelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            soapEnvelope.dotNet = true;
+            soapEnvelope.setOutputSoapObject(Request);
+            HttpTransportSE transport = new HttpTransportSE(URL, 80000);
+
+            transport.call(SOAP_ACTION, soapEnvelope);
+
+            //resultString = (SoapPrimitive) soapEnvelope.getResponse();
+            Object  response = (Object) soapEnvelope.getResponse();
+            resultString = response.toString();
+
+            resultString = "OK";
+            return resultString;
+
+            //Log.i(TAG, "Result Celsius: " + resultString);
+        } catch (Exception ex) {
+            Log.e(TAG, "Error: " + ex.getMessage());
+        }
+        return SOAP_ACTION;
     }
 
     public String guardaempleadoRemotosSync() {
@@ -1098,6 +1186,33 @@ public class MainActivity2 extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+            return resultString;
+        }
+    }
+
+    public class syncronizationCheckInCheckOutRemoto extends AsyncTask<String,String,String> {
+        String z = "";
+        Boolean isSuccess = false;
+
+        @Override
+        protected void onPreExecute() {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onPostExecute(String r) {
+            progressBar.setVisibility(View.GONE);
+            r = resultString;
+            Toast.makeText(MainActivity2.this, r, Toast.LENGTH_SHORT).show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            resultString = guardacheckincheckout();
+
+            if (resultString.equals("")) resultString = "NOT OK";
             return resultString;
         }
     }

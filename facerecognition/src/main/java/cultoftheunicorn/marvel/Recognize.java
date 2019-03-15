@@ -1,5 +1,6 @@
 package cultoftheunicorn.marvel;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.security.InvalidParameterException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -187,6 +189,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                     }
 
                     mOpenCvCameraView.setCamFront();
+                    //mOpenCvCameraView.setCamBack();
                     mOpenCvCameraView.enableView();
 
                 } break;
@@ -194,7 +197,6 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                 {
                     super.onManagerConnected(status);
                 } break;
-
 
             }
         }
@@ -425,6 +427,24 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                         if (!textToDisplay.contains("Unknown"))
                         //if (!textToDisplay.trim().equals("**Unknown****Unknown**"))
                         {
+                            Intent intent = getIntent();
+                            String IDPROYECTO = getIntent().getStringExtra("IDPROYECTO");
+
+                            long currentTime = System.currentTimeMillis();
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.set(Calendar.HOUR_OF_DAY, 0);
+                            calendar.set(Calendar.MINUTE, 0);
+                            calendar.set(Calendar.SECOND, 0);
+                            calendar.set(Calendar.MILLISECOND, 0);
+                            long onlydate = calendar.getTimeInMillis();
+
+                            Intent resultIntent = new Intent();
+                            resultIntent.putExtra("NOMBREEMPLEADO", textToDisplay);
+                            resultIntent.putExtra("FECHA", String.valueOf(onlydate));
+                            resultIntent.putExtra("CHECK", String.valueOf(currentTime));
+                            resultIntent.putExtra("IDPROYECTO", IDPROYECTO);
+                            setResult(-100, resultIntent);
+
                             Toast.makeText(getApplicationContext(),textToDisplay, Toast.LENGTH_LONG).show();
                             finish();
                         }

@@ -1,16 +1,15 @@
 package cultoftheunicorn.marvel;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +18,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.cultoftheunicorn.marvel.R;
 import org.xmlpull.v1.XmlPullParser;
@@ -27,9 +27,12 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Calendar;
 import java.util.List;
 
+import cultoftheunicorn.marvel.dao.CheckInCheckOutDAO;
 import cultoftheunicorn.marvel.dao.EmpleadoDAO;
+import cultoftheunicorn.marvel.modelo.CheckInCheckOut;
 import cultoftheunicorn.marvel.modelo.Empleado;
 
 public class ListaEmpleados4 extends AppCompatActivity {
@@ -40,12 +43,104 @@ public class ListaEmpleados4 extends AppCompatActivity {
     String[] IDPROYECTO;
     String modoremoto = "";
     private List<Empleado> mListEmpleado;
+    private List<CheckInCheckOut> mListCheckInCheckOut;
 
     public static final int SIGNATURE_ACTIVITY = 1;
     String TAG = "Response";
     String ip, resultString, numestacion, name;
     String proyect = "";
     String IDPROYECT = "";
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(resultCode) {
+
+            //----------------OBTENER RESULTCODE PARA SABER SI ES REGISTRAR CHECKIN O CHECKOUT----//
+            case -100:
+                super.onActivityResult(requestCode, resultCode, data);
+                String NOMBREEMPLEADO = data.getStringExtra("NOMBREEMPLEADO");
+                String IDPROYECTO = data.getStringExtra("IDPROYECTO");
+                String IDEMPLEADO = data.getStringExtra("IDEMPLEADO");
+                String FECHA = data.getStringExtra("FECHA");
+                String CHECK = data.getStringExtra("CHECK");
+
+                FECHA = FECHA.substring(0,10);
+                CHECK = CHECK.substring(0,10);
+
+                Calendar rightNow = Calendar.getInstance();
+                int horaactualformato24 = rightNow.get(Calendar.HOUR_OF_DAY); // return the hour in 24 hrs format (ranging from 0-23)
+
+                CheckInCheckOutDAO checkincheckout = new CheckInCheckOutDAO(this);
+                Cursor cursor = checkincheckout.getAllCheckInCheckOutXFechaDia(Long.parseLong(FECHA), Long.parseLong(IDEMPLEADO));
+                cursor.moveToFirst();
+                //------------REALIZAR GUARDADO EN BASE DE DATOS LC O REMOTA----------------------//
+                while(!cursor.isAfterLast())
+                {
+                    //--------------------CONDICIONES PARA CHECK IN-------------------------------//
+                    if (cursor.getCount() == 2)
+                    {
+                        if ((horaactualformato24 >=15) && (horaactualformato24 <= 18)) {
+                            CheckInCheckOut createdcheckincheckout = checkincheckout.createCheckInCheckOut(Integer.parseInt(IDPROYECTO),
+                                    Integer.parseInt(IDEMPLEADO),
+                                    Long.parseLong(CHECK),
+                                    Long.parseLong(FECHA),
+                                    "CHECKIN",
+                                    "NO",
+                                    "NOREGISTRADO");
+                            break;
+                        }
+                    }
+                    //--------------------CONDICIONES PARA CHECK OUT------------------------------//
+                    if ((cursor.getCount() == 1) || (cursor.getCount() == 3))
+                    {
+                        if (horaactualformato24 <= 13) {
+
+                            if (Long.parseLong(cursor.getString(0)) <= 13) {
+
+                                CheckInCheckOut createdcheckincheckout = checkincheckout.createCheckInCheckOut(Integer.parseInt(IDPROYECTO),
+                                        Integer.parseInt(IDEMPLEADO),
+                                        Long.parseLong(CHECK),
+                                        Long.parseLong(FECHA),
+                                        "CHECKOUT",
+                                        "NO",
+                                        "NOREGISTRADO");
+                            }
+                            break;
+                        }
+
+                        if (horaactualformato24 >=15 && horaactualformato24 <= 18)
+                        {
+                            if (Long.parseLong(cursor.getString(0)) <= 18) {
+
+                                CheckInCheckOut createdcheckincheckout = checkincheckout.createCheckInCheckOut(Integer.parseInt(IDPROYECTO),
+                                        Integer.parseInt(IDEMPLEADO),
+                                        Long.parseLong(CHECK),
+                                        Long.parseLong(FECHA),
+                                        "CHECKOUT",
+                                        "NO",
+                                        "NOREGISTRADO");
+                            }
+                            break;
+                        }
+                    }
+                    cursor.moveToNext();
+                    //----------------------------------------------------------------------------//
+                }
+                if (cursor.getCount() < 1)
+                {
+                    CheckInCheckOut createdcheckincheckout = checkincheckout.createCheckInCheckOut(Integer.parseInt(IDPROYECTO),
+                                                                                                   Integer.parseInt(IDEMPLEADO),
+                                                                                                   Long.parseLong(CHECK),
+                                                                                                   Long.parseLong(FECHA),
+                                                                                      "CHECKIN",
+                                                                                       "NO",
+                                                                                           "NOREGISTRADO");
+                }
+                //--------------------------------------------------------------------------------//
+                break;
+            //------------------------------------------------------------------------------------//
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
