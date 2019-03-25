@@ -49,10 +49,12 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import cultoftheunicorn.marvel.dao.CheckInCheckOutDAO;
+import cultoftheunicorn.marvel.dao.DispositivosDAO;
 import cultoftheunicorn.marvel.dao.EmpleadoDAO;
 import cultoftheunicorn.marvel.dao.FotodefaultDAO;
 import cultoftheunicorn.marvel.dao.ProyectoDAO;
 import cultoftheunicorn.marvel.dao.UsuarioDAO;
+import cultoftheunicorn.marvel.modelo.Dispositivos;
 import cultoftheunicorn.marvel.modelo.Empleado;
 import cultoftheunicorn.marvel.modelo.FotoDefault;
 import cultoftheunicorn.marvel.modelo.Proyecto;
@@ -68,7 +70,7 @@ public class MainActivity2 extends AppCompatActivity {
     public static final int SIGNATURE_ACTIVITY = 1;
     String TAG = "Response";
     String resultString;
-    String stringProyectos;
+    String stringProyectos, StringDispositivos;
     String XMLFILEEXIST;
     int TIMEOUT = 0;
 
@@ -92,7 +94,8 @@ public class MainActivity2 extends AppCompatActivity {
     String NOMBREEMP, CODIGOEMPLEADO, DOMICILIO, CIUDAD, TELEFONO, CUENTACONTABLE, FECHAALTA, FECHABAJA,
             IMSS, STATUS, REGISTRO, SYNCRONIZADO;
 
-    String CHECKPROYECTOID, CHECKEMPLEADOID, CHECKFECHA, CHECKCHECKS, CHECKCHECKINHECHO;
+    String CHECKPROYECTOID, CHECKEMPLEADOID, CHECKFECHA, CHECKCHECKS, CHECKCHECKINHECHO, CHECKNOMBREEMPLEADO;
+    String CHECKSSTRINGRESULT;
     long IDESTACION, TURNO, IDDISPOSITIVO, IDPROYECTO;
 
     private List<Usuario> mListUsuario;
@@ -424,6 +427,7 @@ public class MainActivity2 extends AppCompatActivity {
         FotodefaultDAO fotodefault = new FotodefaultDAO(this);
         UsuarioDAO usuario = new UsuarioDAO(this);
         ProyectoDAO proyecto = new ProyectoDAO(this);
+        DispositivosDAO dispositivo = new DispositivosDAO(this);
 
         mListEmpleado = empleado.getAllEmpleado();
         mListFotoDefault = fotodefault.getAllFotoDefault();
@@ -654,7 +658,7 @@ public class MainActivity2 extends AppCompatActivity {
         syncronizationProyectos sincronizaproyectos = new syncronizationProyectos();
         sincronizaproyectos.execute();
 
-        Proyecto createProyecto = proyecto.createProyecto("", 0);
+        Proyecto createProyecto = proyecto.createProyecto("", "", 0 );
         proyecto.deleteProyecto(createProyecto);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -671,9 +675,44 @@ public class MainActivity2 extends AppCompatActivity {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
         for (int z=0; z<=parts1.length - 1; z++){
             parts2 = parts1[z].split("@");
-            createProyecto = proyecto.createProyecto(parts2[1].toString(), Long.parseLong(parts2[0].toString()));
+            createProyecto = proyecto.createProyecto(parts2[1].toString(), parts2[2].toString(), Long.parseLong(parts2[0].toString()));
         }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////---SYNCRONIZADO DE TABLA PROYECTO REMOTO A LOCAL----------------------------------------////////////////////////////////////////////////////////////
+        syncronizationDispositivos sincronizadispositivos = new syncronizationDispositivos();
+        sincronizadispositivos.execute();
+
+        Dispositivos createDispositivo = dispositivo.createDispositivos("", "", "", "", "", "", "", 0 );
+        dispositivo.deleteDispositivos(createDispositivo);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+///////// agregar ciclo con timeout---------------------------------------------------------////////
+        while (StringDispositivos.trim().toString() == "")
+        {
+            parts1 = StringDispositivos.split(",");
+        }
+
+        if (StringDispositivos.trim().toString() != "") {
+            parts1 = StringDispositivos.split(",");
+        }
+////////////////////////////////////////////////////////////////////////////////////////////////////
+        for (int z=0; z<=parts1.length - 1; z++){
+            parts2 = parts1[z].split("@");
+            createDispositivo = dispositivo.createDispositivos(parts2[0].toString(),
+                                                               parts2[1].toString(),
+                                                               parts2[2].toString(),
+                                                               parts2[3].toString(),
+                                                               parts2[4].toString(),
+                                                               parts2[5].toString(),
+                                                               parts2[6].toString(),
+                                                              Long.parseLong(parts2[7].toString()));
+        }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////---PROCESO PARA GUARDAR EN BASE DE DATOS REMOTA EMPLEADOS DADOS DE ALTA EN DISPOSITIVO--////////////////////////////////////////////////////////////
         mListEmpleado = empleado.getAllEmpleado();
@@ -772,13 +811,36 @@ public class MainActivity2 extends AppCompatActivity {
 
         cursor.moveToFirst();
 
-        while(!cursor.isAfterLast()) {
-            CHECKPROYECTOID = cursor.getString(0);
-            CHECKEMPLEADOID = cursor.getString(1);
-            CHECKCHECKS = cursor.getString(2);
-            CHECKFECHA = cursor.getString(3);
-            CHECKCHECKINHECHO = cursor.getString(4);
+        CHECKSSTRINGRESULT = "";
 
+        if (cursor.getCount()>0) {
+            CHECKNOMBREEMPLEADO = cursor.getString(0);
+            CHECKPROYECTOID = cursor.getString(1);
+            CHECKEMPLEADOID = cursor.getString(2);
+            CHECKCHECKS = cursor.getString(3);
+            CHECKFECHA = cursor.getString(4);
+            CHECKCHECKINHECHO = cursor.getString(5);
+            CHECKSSTRINGRESULT = CHECKSSTRINGRESULT +
+                    CHECKNOMBREEMPLEADO + "|" + CHECKPROYECTOID + "|" + CHECKEMPLEADOID + "|" + CHECKCHECKS + "|" + CHECKFECHA + "|" + CHECKCHECKINHECHO;
+
+            checkincheckout.updateCheckInCheckOut(checkincheckout, cursor.getInt(6));
+            cursor.moveToNext();
+        }
+        while(!cursor.isAfterLast()) {
+            CHECKSSTRINGRESULT = CHECKSSTRINGRESULT + "@";
+            CHECKNOMBREEMPLEADO = cursor.getString(0);
+            CHECKPROYECTOID = cursor.getString(1);
+            CHECKEMPLEADOID = cursor.getString(2);
+            CHECKCHECKS = cursor.getString(3);
+            CHECKFECHA = cursor.getString(4);
+            CHECKCHECKINHECHO = cursor.getString(5);
+
+            CHECKSSTRINGRESULT = CHECKSSTRINGRESULT +
+                                 CHECKNOMBREEMPLEADO+"|"+CHECKPROYECTOID+"|"+CHECKEMPLEADOID+"|"+CHECKCHECKS+"|"+CHECKFECHA+"|"+CHECKCHECKINHECHO;
+
+            checkincheckout.updateCheckInCheckOut(checkincheckout, cursor.getInt(6));
+            cursor.moveToNext();
+        }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //ALIMENTA REGISTROS PARA GUARDADO EN BD REMOTA///////////////////////////////////////////////////////////////////////////////////////////
@@ -807,8 +869,6 @@ public class MainActivity2 extends AppCompatActivity {
                 result = "ERROR.- REVISE SU CONECCION INALAMBRICA, O CONECCION CON INTERNET";
                 return result;
             }
-            cursor.moveToNext();
-        }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -824,11 +884,7 @@ public class MainActivity2 extends AppCompatActivity {
 
         try {
             SoapObject Request = new SoapObject(NAMESPACE, METHOD_NAME);
-            Request.addProperty("ProyectoID", CHECKPROYECTOID);
-            Request.addProperty("EmpleadoID", CHECKEMPLEADOID);
-            Request.addProperty("Checks", CHECKCHECKS);
-            Request.addProperty("Fecha", CHECKFECHA);
-            Request.addProperty("CheckInHecho", CHECKCHECKINHECHO);
+            Request.addProperty("CHECKSSTRINGRESULT", CHECKSSTRINGRESULT);
 
             SoapSerializationEnvelope soapEnvelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             soapEnvelope.dotNet = true;
@@ -946,6 +1002,40 @@ public class MainActivity2 extends AppCompatActivity {
         } catch (Exception ex) {
             Log.e(TAG, "Error: " + ex.getMessage());
         }
+        return SOAP_ACTION;
+    }
+
+    public String obtenDispositivos() {
+        String SOAP_ACTION = "urn:androidserviceIntf-Iandroidservice#obtendispositivos";
+        String METHOD_NAME = "obtendispositivos";
+        String NAMESPACE = "urn:androidserviceIntf";
+        String URL = "http://" + ip + ":1001/soap/Iandroidservice";
+        String z;
+        boolean isSuccess;
+
+        try
+        {
+            SoapObject Request = new SoapObject(NAMESPACE, METHOD_NAME);
+
+            SoapSerializationEnvelope soapEnvelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            soapEnvelope.dotNet = true;
+            soapEnvelope.setOutputSoapObject(Request);
+
+            HttpTransportSE transport = new HttpTransportSE(URL, 80000);
+
+            transport.call(SOAP_ACTION, soapEnvelope);
+            //resultString = (SoapPrimitive) soapEnvelope.getResponse();
+            Object response = (Object) soapEnvelope.getResponse();
+            resultString = response.toString();
+
+            return resultString;
+
+            //Log.i(TAG, "Result Celsius: " + resultString);
+        }
+        catch (Exception ex) {
+            Log.e(TAG, "Error: " + ex.getMessage());
+        }
+
         return SOAP_ACTION;
     }
 
@@ -1271,6 +1361,39 @@ public class MainActivity2 extends AppCompatActivity {
             {stringProyectos= "-1";};
 
             if (resultString.equals("")) resultString = "NOT OK";
+            else
+            {resultString = "OK";}
+            return resultString;
+        }
+    }
+
+    public class syncronizationDispositivos extends AsyncTask<String,String,String> {
+        String z = "";
+        Boolean isSuccess = false;
+
+        @Override
+        protected void onPreExecute() {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onPostExecute(String r) {
+            progressBar.setVisibility(View.GONE);
+            r = resultString;
+            Toast.makeText(MainActivity2.this, r, Toast.LENGTH_SHORT).show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            StringDispositivos = "";
+
+            StringDispositivos =  obtenDispositivos();
+
+            if (StringDispositivos.equals(""))
+            {StringDispositivos= "-1";};
+
+            if (StringDispositivos.equals("")) StringDispositivos = "NOT OK";
             else
             {resultString = "OK";}
             return resultString;

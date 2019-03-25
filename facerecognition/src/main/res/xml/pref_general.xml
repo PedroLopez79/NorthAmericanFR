@@ -67,6 +67,17 @@
         android:title="Rotar Pantalla completa"
         android:password="false" />
 
+    <EditTextPreference
+        android:capitalize="words"
+        android:defaultValue="NO"
+        android:inputType="textCapWords"
+        android:key="MACWIFI"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Usar MAC ADDRESS WIFI"
+        android:password="false" />
+
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->

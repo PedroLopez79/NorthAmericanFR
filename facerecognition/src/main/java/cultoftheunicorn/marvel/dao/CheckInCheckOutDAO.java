@@ -49,6 +49,15 @@ public class CheckInCheckOutDAO {
         mDatabase.close();
     }
 
+    public void updateCheckInCheckOut(CheckInCheckOutDAO checkincheckout, long ids) {
+        System.out.println("the updated employee has te id: " + ids);
+        ContentValues args = new ContentValues();
+        args.put("SYNCRONIZADO", "SI");
+        args.put("REGISTRO", "SIREGISTRADO");
+        mDatabase.update(AdminSqLiteOpenHelper.TABLE_CHECKINCHECKOUT, args,AdminSqLiteOpenHelper.COLUMN_CHECKINCHECKOUTID
+                + " = " + ids, null);
+    }
+
     public CheckInCheckOut createCheckInCheckOut(long ProyectoID, long EmpleadoID, long Checks, long Fecha, String CheckInHecho, String Syncronizado, String Registro) {
         ContentValues values = new ContentValues();
         values.put(AdminSqLiteOpenHelper.COLUMN_CPROYECTOID, ProyectoID);
@@ -142,9 +151,9 @@ public class CheckInCheckOutDAO {
 
     public Cursor getAllCheckInCheckOutX()
     {
-        Cursor cursor = mDatabase.rawQuery("SELECT ProyectoID, EmpleadoID, strftime('%Y-%m-%dT%H:%M:%S', (datetime(ChechInCheckOut.CHECKS, 'unixepoch', 'localtime'))) AS CHECKS, " +
+        Cursor cursor = mDatabase.rawQuery("SELECT Empleados.NOMBRE, ChechInCheckOut.ProyectoID, ChechInCheckOut.EmpleadoID, strftime('%Y-%m-%dT%H:%M:%S', (datetime(ChechInCheckOut.CHECKS, 'unixepoch', 'localtime'))) AS CHECKS, " +
                 "strftime('%Y-%m-%dT%H:%M:%S', (datetime(ChechInCheckOut.FECHA, 'unixepoch', 'localtime'))) AS FECHA, " +
-                "CHECKINHECHO FROM ChechInCheckOut", null);
+                "ChechInCheckOut.CHECKINHECHO, ChechInCheckOut.CheckInCheckOutID FROM ChechInCheckOut INNER JOIN Empleados ON Empleados.IDEMPLEADO = ChechInCheckOut.EMPLEADOID WHERE ChechInCheckOut.Syncronizado = \"NO\" AND ChechInCheckOut.Registro = \"NOREGISTRADO\"", null);
 
         return cursor;
     }

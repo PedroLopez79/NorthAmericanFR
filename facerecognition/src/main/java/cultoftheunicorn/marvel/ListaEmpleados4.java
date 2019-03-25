@@ -35,6 +35,8 @@ import cultoftheunicorn.marvel.dao.EmpleadoDAO;
 import cultoftheunicorn.marvel.modelo.CheckInCheckOut;
 import cultoftheunicorn.marvel.modelo.Empleado;
 
+import static cultoftheunicorn.marvel.personalProyecto2.getMacAddress;
+
 public class ListaEmpleados4 extends AppCompatActivity {
 
     String[] IMAGE;
@@ -50,6 +52,18 @@ public class ListaEmpleados4 extends AppCompatActivity {
     String ip, resultString, numestacion, name;
     String proyect = "";
     String IDPROYECT = "";
+
+    @Override
+    public void onBackPressed() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String USARWIFI= prefs.getString("MACWIFI", "SI");
+
+        if (USARWIFI.equals("SI")) {
+            Intent resultIntent = new Intent();
+            setResult(-200, resultIntent);
+            finish();
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

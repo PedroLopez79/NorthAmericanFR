@@ -1,7 +1,11 @@
 package cultoftheunicorn.marvel;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -21,7 +25,9 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 import org.opencv.cultoftheunicorn.marvel.R;
 
+import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import cultoftheunicorn.marvel.dao.ProyectoDAO;
@@ -42,8 +48,22 @@ public class personalProyecto2 extends AppCompatActivity {
     ProyectoDAO proyecto;
     private List<Proyecto> mListProyecto;
 
-    String modoremoto = "";
-    String proyect= "";
+    String proyect, modoremoto, MACADDRESS, USARWIFI = "";
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String USARWIFI= prefs.getString("MACWIFI", "SI");
+
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(resultCode) {
+            case -200:
+                if (USARWIFI.equals("SI")) {
+                    finish();
+                }
+
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +73,17 @@ public class personalProyecto2 extends AppCompatActivity {
         spinner = (Spinner) findViewById(R.id.spinnerproyectos);
         btnbuscar = (Button) findViewById(R.id.btnbuscar);
 
+        //****************************************************************************************//
+        // ---------------------------------------------------------------------------------------//
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        USARWIFI= prefs.getString("MACWIFI", "SI");
+
+        if (USARWIFI.equals("SI")) {
+            MACADDRESS = getMacAddress().toUpperCase();
+        }
+        //****************************************************************************************//
+        //****************************************************************************************//
+
         ip = prefs.getString("ipservidor", "192.168.0.6");
         numestacion = prefs.getString("numeroestacion","2601");
         modoremoto= prefs.getString("modoremoto", "SI");
@@ -61,6 +91,18 @@ public class personalProyecto2 extends AppCompatActivity {
         proyecto = new ProyectoDAO(this);
         //obtener listado local de usuario, empleados, fotodefault abrir bases de datos local
         mListProyecto = proyecto.getAllProyecto();
+
+        if (USARWIFI.equals("SI")) {
+            Cursor proyectoxmac = proyecto.getAllProyectoxMAC(MACADDRESS);
+            proyectoxmac.moveToFirst();
+
+            if (proyectoxmac.getCount() > 0) {
+                proyect = proyectoxmac.getString(0);
+                Intent intent = new Intent(personalProyecto2.this, ListaEmpleados4.class);
+                intent.putExtra("proyect", proyect);
+                startActivityForResult(intent, SIGNATURE_ACTIVITY);
+            }
+        }
 
         personalProyecto2.AsyncCallWS task = new personalProyecto2.AsyncCallWS();
         task.execute();
@@ -75,6 +117,33 @@ public class personalProyecto2 extends AppCompatActivity {
                 startActivityForResult(intent, SIGNATURE_ACTIVITY);
             }
         });
+    }
+
+    public static String getMacAddress() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    res1.append(Integer.toHexString(b & 0xFF) + ":");
+                }
+
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+            Log.e("Error", ex.getMessage());
+        }
+        return "";
     }
 
     public String obtenProyectos() {

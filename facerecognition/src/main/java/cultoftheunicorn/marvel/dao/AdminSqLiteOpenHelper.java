@@ -25,6 +25,18 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
     public static final String TABLE_PROYECTO       =  "Proyecto";
     public static final String COLUMN_PROYECTOID    =  "IDPROYECTO";
     public static final String COLUMN_PDESCRIPCION  =  "DESCRIPCION";
+    public static final String COLUMN_DISPOSITIVOID =  "DISPOSITIVOID";
+
+    //columnas tabla dispositivo
+    public static final String TABLE_DISPOSITIVOS    =  "Dispositivos";
+    public static final String COLUMN_DDispositivoID =  "IDDISPOSITIVO";
+    public static final String COLUMN_DREMOTO        =  "REMOTO";
+    public static final String COLUMN_DSYNCRONIZADO  =  "SYNCRONIZADO";
+    public static final String COLUMN_DMACADDRESS    =  "MACADDRESS";
+    public static final String COLUMN_DDESCRIPCION   =  "DESCRIPCION";
+    public static final String COLUMN_DDEPARTAMENTO  =  "DEPARTAMENTO";
+    public static final String COLUMN_DAREA          =  "AREA";
+    public static final String COLUMN_DSUPERVISORENCARGADO = "SUPERVISORENCARGADO";
 
     //columnas tabla empleados
     public static final String TABLE_EMPLEADOS       = "Empleados";
@@ -142,7 +154,19 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String SQL_CREATE_TABLE_PROYECTO = "CREATE TABLE " + TABLE_PROYECTO + " ("
             + COLUMN_PROYECTOID     + " INTEGER PRIMARY KEY, "
-            + COLUMN_PDESCRIPCION   + " TEXT "
+            + COLUMN_PDESCRIPCION   + " TEXT, "
+            + COLUMN_DISPOSITIVOID  + " INT"
+            + ");";
+
+    private static final String SQL_CREATE_TABLE_DISPOSITIVOS = "CREATE TABLE " + TABLE_DISPOSITIVOS + " ("
+            + COLUMN_DDispositivoID + " INTEGER PRIMARY KEY, "
+            + COLUMN_DREMOTO        + " TEXT, "
+            + COLUMN_DSYNCRONIZADO  + " TEXT, "
+            + COLUMN_DMACADDRESS    + " TEXT, "
+            + COLUMN_DDESCRIPCION   + " TEXT, "
+            + COLUMN_DDEPARTAMENTO  + " TEXT, "
+            + COLUMN_DAREA          + " TEXT, "
+            + COLUMN_DSUPERVISORENCARGADO + " TEXT"
             + ");";
 
     private static final String SQL_CREATE_TABLE_CHECKINCHECKOUT = "CREATE TABLE " + TABLE_CHECKINCHECKOUT + " ("
@@ -172,6 +196,7 @@ public class AdminSqLiteOpenHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_USUARIO);
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_PROYECTO);
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_CHECKINCHECKOUT);
+        sqLiteDatabase.execSQL(SQL_CREATE_TABLE_DISPOSITIVOS);
     }
 
     @Override

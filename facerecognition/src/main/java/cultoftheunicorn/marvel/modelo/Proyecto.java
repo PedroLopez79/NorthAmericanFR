@@ -6,6 +6,7 @@ public class Proyecto {
 
     private long mId;
     private String mDescripcion;
+    private long mDispositivoID;
 
     public Proyecto() {
 
@@ -29,5 +30,11 @@ public class Proyecto {
 
     public void setDescripcion(String mDescripcion) {
         this.mDescripcion= mDescripcion;
+    }
+
+    public long getDispositivoID() { return mDispositivoID; }
+
+    public void setDispositivoID(long mDispositivoID) {
+        this.mDispositivoID = mDispositivoID;
     }
 }

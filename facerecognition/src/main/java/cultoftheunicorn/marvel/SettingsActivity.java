@@ -198,7 +198,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("timeout"));
             bindPreferenceSummaryToValue(findPreference("rotarpantalla"));
             bindPreferenceSummaryToValue(findPreference("rotarimagenfotocapturada"));
-            //bindPreferenceSummaryToValue(findPreference("example_list"));
+            bindPreferenceSummaryToValue(findPreference("MACWIFI"));
         }
 
         @Override
