@@ -1,6 +1,5 @@
 package cultoftheunicorn.marvel;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
@@ -32,6 +32,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -39,14 +40,12 @@ import org.opencv.core.Size;
 import org.opencv.cultoftheunicorn.marvel.R;
 import org.opencv.objdetect.CascadeClassifier;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.security.InvalidParameterException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -55,7 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.http.util.EncodingUtils;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -68,7 +66,12 @@ import cultoftheunicorn.marvel.dao.EmpleadoDAO;
 import cultoftheunicorn.marvel.dao.FotodefaultDAO;
 import cultoftheunicorn.marvel.modelo.Empleado;
 import cultoftheunicorn.marvel.modelo.FotoDefault;
-import cultoftheunicorn.marvel.modelo.Usuario;
+
+import static com.googlecode.javacv.cpp.opencv_objdetect.CV_HAAR_DO_ROUGH_SEARCH;
+import static com.googlecode.javacv.cpp.opencv_objdetect.CV_HAAR_FIND_BIGGEST_OBJECT;
+import static java.lang.Math.atan2;
+import static java.lang.StrictMath.sqrt;
+import static org.opencv.imgproc.Imgproc.getRotationMatrix2D;
 
 //import android.content.Context;
 
@@ -93,8 +96,18 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
 
     private Mat                    mRgba;
     private Mat                    mGray;
-    private File mCascadeFile;
-    private CascadeClassifier mJavaDetector;
+    private File mCascadeFile, mCascadeFileER, mCascadeFileEL;
+    private CascadeClassifier mJavaDetector, mCascadeER, mCascadeEL;
+
+    private float EYE_SX = 0.12f;
+    private float EYE_SY = 0.17f;
+    private float EYE_SW = 0.37f;
+    private float EYE_SH = 0.36f;
+
+    // rectangulos donde estan los ojos y cara
+    private Rect rostro = null;
+    private Rect lEye = null;
+    private Rect rEye = null;
 
     private int                    mDetectorType       = JAVA_DETECTOR;
     private String[]               mDetectorName;
@@ -163,7 +176,9 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                         // load cascade file from application resources
                         InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade.xml");
+                        //mCascadeFile = new File(cascadeDir, "lbpcascade.xml");
+                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];
@@ -173,15 +188,53 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                         }
                         is.close();
                         os.close();
+//--------------------------------------------------------------------------------------------------------------------------
+                        // --------------------------------- load left eye classificator -----------------------------------
+                        InputStream iser = getResources().openRawResource(R.raw.haarcascade_righteye_2splits);
+                        File cascadeDirER = getDir("cascadeER", Context.MODE_PRIVATE);
+                        mCascadeFileER = new File(cascadeDirER, "haarcascade_righteye_2splits.xml");
+
+                        FileOutputStream oser = new FileOutputStream(mCascadeFileER);
+
+                        byte[] bufferER = new byte[4096];
+                        int bytesReadER;
+                        while ((bytesReadER = iser.read(bufferER)) != -1) {
+                            oser.write(bufferER, 0, bytesReadER);
+                        }
+                        iser.close();
+                        oser.close();
+//----------------------------------------------------------------------------------------------------
+// --------------------------------- load right eye classificator ------------------------------------
+                        InputStream isel = getResources().openRawResource(R.raw.haarcascade_lefteye_2splits);
+                        File cascadeDirEL = getDir("cascadeEL", Context.MODE_PRIVATE);
+                        mCascadeFileEL = new File(cascadeDirEL, "haarcascade_lefteye_2splits.xml");
+
+                        FileOutputStream osel = new FileOutputStream(mCascadeFileEL);
+
+                        byte[] bufferEL = new byte[4096];
+                        int bytesReadEL;
+                        while ((bytesReadEL = isel.read(bufferEL)) != -1) {
+                            osel.write(bufferEL, 0, bytesReadEL);
+                        }
+                        isel.close();
+                        osel.close();
+// ------------------------------------------------------------------------------------------------------
+
 
                         mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-                        if (mJavaDetector.empty()) {
+                /**/    mCascadeER = new CascadeClassifier(mCascadeFileER.getAbsolutePath());
+                /**/    mCascadeEL = new CascadeClassifier(mCascadeFileEL.getAbsolutePath());
+                        if (mJavaDetector.empty()|| mCascadeER.empty() || mCascadeEL.empty()) {
                             Log.e(TAG, "Failed to load cascade classifier");
                             mJavaDetector = null;
+                /**/        mCascadeER = null;
+                            mCascadeEL = null;
                         } else
                             Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
 
                         cascadeDir.delete();
+                /**/    cascadeDirER.delete();
+                /**/    cascadeDirEL.delete();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -189,6 +242,7 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                     }
 
                     mOpenCvCameraView.setCamFront();
+
                     //mOpenCvCameraView.setCamBack();
                     mOpenCvCameraView.enableView();
 
@@ -807,10 +861,12 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
 
+        int flags = CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH;
+
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
             if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
+                mAbsoluteFaceSize = Math.round((height * mRelativeFaceSize));
             }
               //mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
         }
@@ -819,8 +875,10 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
 
         if (mDetectorType == JAVA_DETECTOR) {
             if (mJavaDetector != null)
-                mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+                mJavaDetector.detectMultiScale(mGray, faces, 1.1, 1, flags, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+                        new Size(80, 80), new Size());
+                //mJavaDetector.detectMultiScale(mGray, faces, 1.1f, 2, flags, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+                //        new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
         }
         else if (mDetectorType == NATIVE_DETECTOR) {
             /*if (mNativeDetector != null)
@@ -832,28 +890,129 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
 
         Rect[] facesArray = faces.toArray();
 
-        if ((facesArray.length>0) && (faceState==SEARCHING))
-        {
-            Mat m=new Mat();
-            m=mGray.submat(facesArray[0]);
-            mBitmap = Bitmap.createBitmap(m.width(),m.height(), Bitmap.Config.ARGB_8888);
+        if ((facesArray.length>0) && (faceState==SEARCHING)) {
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            if (faces.toArray().length == 1) {
+                rostro = faces.toArray()[0];
+
+                Mat mm = new Mat(mGray, rostro);
+
+                int leftX = (Math.round((mm.cols()) * EYE_SX));
+                int topY = (Math.round(mm.rows() * EYE_SY));
+                int widthX = Math.round(mm.cols() * EYE_SW);
+                int heightY = Math.round(mm.rows() * EYE_SH);
+                int rightX = (int) (Math.round((mm.cols()) * (1.0 - EYE_SX - EYE_SW)));
+
+                Mat topLeftOfFace = new Mat(mm, new Rect(leftX, topY, widthX, heightY));
+                Mat topRightOfFace = new Mat(mm, new Rect(rightX, topY, widthX, heightY));
+
+                //vector<Rect> lEyeR, rEyeR;
+                MatOfRect lEyeR = new MatOfRect();
+                MatOfRect rEyeR = new MatOfRect();
+
+                mCascadeEL.detectMultiScale(topLeftOfFace, lEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+                        new Size(80, 80), new Size());
+                mCascadeER.detectMultiScale(topRightOfFace, rEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+                        new Size(80, 80), new Size());
+
+                if ((lEyeR.toArray().length == 1) && (rEyeR.toArray().length == 1)) {
+                    // Ojos de la Cara localizados
+                    lEye = lEyeR.toArray()[0];
+                    rEye = rEyeR.toArray()[0];
+
+                    lEye.x += leftX;
+                    lEye.y += topY;
+
+                    rEye.x += rightX;
+                    rEye.y += topY;
+
+                } else {
+                    lEye = null;
+                    rEye = null;
+                }
+
+                /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-            Utils.matToBitmap(m, mBitmap);
-            Message msg = new Message();
-            String textTochange = "IMG";
-            msg.obj = textTochange;
-            //mHandler.sendMessage(msg);
+                Mat m = new Mat();
+                m = mGray.submat(facesArray[0]);
 
-            textTochange = fr.predict(m);
-            mLikely=fr.getProb();
-            msg = new Message();
-            msg.obj = textTochange;
-            mHandler.sendMessage(msg);
+                mBitmap = Bitmap.createBitmap(m.width(), m.height(), Bitmap.Config.ARGB_8888);
 
+                Utils.matToBitmap(m, mBitmap);
+                Message msg = new Message();
+                String textTochange = "IMG";
+                msg.obj = textTochange;
+                //mHandler.sendMessage(msg);
+                //
+
+                if ((rEye != null) && (lEye != null)) {
+
+                    textTochange = fr.predict(m, lEye, rEye);
+                }
+
+                mLikely = fr.getProb();
+                msg = new Message();
+                msg.obj = textTochange;
+                mHandler.sendMessage(msg);
+
+            }
         }
-        for (int i = 0; i < facesArray.length; i++)
-            Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+
+        for (int i = 0; i < facesArray.length; i++) {
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            if (faces.toArray().length == 1) {
+                rostro = faces.toArray()[0];
+
+                Mat mm = new Mat(mGray, rostro);
+
+                int leftX = (Math.round((mm.cols()) * EYE_SX));
+                int topY = (Math.round(mm.rows() * EYE_SY));
+                int widthX = Math.round(mm.cols() * EYE_SW);
+                int heightY = Math.round(mm.rows() * EYE_SH);
+                int rightX = (int) (Math.round((mm.cols()) * (1.0 - EYE_SX - EYE_SW)));
+
+                Mat topLeftOfFace = new Mat(mm, new Rect(leftX, topY, widthX, heightY));
+                Mat topRightOfFace = new Mat(mm, new Rect(rightX, topY, widthX, heightY));
+
+                //vector<Rect> lEyeR, rEyeR;
+                MatOfRect lEyeR = new MatOfRect();
+                MatOfRect rEyeR = new MatOfRect();
+
+                mCascadeEL.detectMultiScale(topLeftOfFace, lEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+                        new Size(80, 80), new Size());
+                mCascadeER.detectMultiScale(topRightOfFace, rEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+                        new Size(80, 80), new Size());
+
+                if ((lEyeR.toArray().length == 1) && (rEyeR.toArray().length == 1)) {
+                    // Ojos de la Cara localizados
+                    lEye = lEyeR.toArray()[0];
+                    rEye = rEyeR.toArray()[0];
+
+                    lEye.x += leftX;
+                    lEye.y += topY;
+
+                    rEye.x += rightX;
+                    rEye.y += topY;
+
+                } else {
+                    lEye = null;
+                    rEye = null;
+                }
+
+
+                //Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+                Core.rectangle(mRgba, rostro.tl(), rostro.br(), FACE_RECT_COLOR, 3);
+                if (rEye != null)
+                    Core.rectangle(mRgba, rEye.tl(), rEye.br(), new Scalar(255, 0, 0, 255), 2);
+
+                if (lEye != null)
+                    Core.rectangle(mRgba, lEye.tl(), lEye.br(), new Scalar(255, 0, 0, 255), 2);
+
+            }
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        }
 
         return mRgba;
     }

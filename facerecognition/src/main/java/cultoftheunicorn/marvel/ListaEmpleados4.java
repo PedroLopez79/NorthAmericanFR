@@ -62,6 +62,9 @@ public class ListaEmpleados4 extends AppCompatActivity {
             Intent resultIntent = new Intent();
             setResult(-200, resultIntent);
             finish();
+        }else
+        {
+            finish();
         }
     }
 
