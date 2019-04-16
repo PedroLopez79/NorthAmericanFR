@@ -35,6 +35,12 @@ public class ListaEmpleados3 extends AppCompatActivity {
     String[] NOMBRES;
     String[] IDEMPLEADO;
     String[] IDPROYECTO;
+    String[] CODIGO;
+    String[] DOMICILIO;
+    String[] IMSS;
+    String[] CIUDAD;
+    String[] Telefono;
+
     String modoremoto = "";
     private List<Empleado> mListEmpleado;
 
@@ -98,6 +104,11 @@ public class ListaEmpleados3 extends AppCompatActivity {
                 NOMBRES = new String[mListEmpleado.size()];
                 IDEMPLEADO = new String[mListEmpleado.size()];
                 IDPROYECTO = new String[mListEmpleado.size()];
+                CODIGO = new String[mListEmpleado.size()];
+                DOMICILIO = new String[mListEmpleado.size()];
+                IMSS = new String[mListEmpleado.size()];
+                CIUDAD = new String[mListEmpleado.size()];
+                Telefono = new String[mListEmpleado.size()];
 
                 x = 0;
                 for (int i=0; i <= mListEmpleado.size()-1; i++)
@@ -111,6 +122,11 @@ public class ListaEmpleados3 extends AppCompatActivity {
                         IDEMPLEADO[i] = Long.toString(mListEmpleado.get(i).getId());
                         NOMBRES[i] = mListEmpleado.get(i).getNombre().toString();
                         IDPROYECTO[i] = String.valueOf(mListEmpleado.get(i).getIdproyecto());
+                        CODIGO[i] = String.valueOf(mListEmpleado.get(i).getCodigoEmpleado());
+                        DOMICILIO[i] = String.valueOf(mListEmpleado.get(i).getDomicilio());
+                        IMSS[i] = String.valueOf(mListEmpleado.get(i).getImss());
+                        CIUDAD[i] = String.valueOf(mListEmpleado.get(i).getCiudad());
+                        Telefono[i] = String.valueOf(mListEmpleado.get(i).getTelefono());
 
                         //DESCRIPCION[c] = descripcion;
                         IMAGE[i] = Base64.encodeToString(fotoemp, Base64.DEFAULT);
@@ -144,8 +160,11 @@ public class ListaEmpleados3 extends AppCompatActivity {
                         IMAGE = new String[i];
                         NOMBRES = new String[i];
                         IDEMPLEADO = new String[i];
-                        //DESCRIPCION = new String[i];
-                        //REFERENCIA = new String[i];
+                        CODIGO = new String[i];
+                        DOMICILIO = new String[i];
+                        IMSS = new String[i];
+                        CIUDAD = new String[i];
+                        Telefono = new String[i];
 
                         while (eventType != XmlPullParser.END_DOCUMENT) {
                             String tagname = xpp.getName();
@@ -248,13 +267,18 @@ public class ListaEmpleados3 extends AppCompatActivity {
                 try {
                     ImageView imageview = (ImageView) convertView.findViewById(R.id.ivcustomlayout);
                     TextView textview1 = (TextView) convertView.findViewById(R.id.txtnombre);
-                    //TextView textview2 = (TextView) convertView.findViewById(R.id.txtcustomlayout2);
-
-                    TextView textview3 = (TextView) convertView.findViewById(R.id.textView7);
+                    TextView textview2 = (TextView) convertView.findViewById(R.id.txtcodigo);
+                    TextView textview3 = (TextView) convertView.findViewById(R.id.txtdomicilio);
+                    TextView textview4 = (TextView) convertView.findViewById(R.id.txtcodigoimss);
+                    TextView textview5 = (TextView) convertView.findViewById(R.id.txtCiudad);
+                    TextView textview6 = (TextView) convertView.findViewById(R.id.txttelefono);
 
                     textview1.setText(NOMBRES[position].toString());
-                    //textview2.setText(DESCRIPCION[position].toString());
-                    //textview3.setText(REFERENCIA[position].toString());
+                    textview2.setText(CODIGO[position].toString());
+                    textview3.setText(DOMICILIO[position].toString());
+                    textview4.setText(IMSS[position].toString());
+                    textview5.setText(CIUDAD[position].toString());
+                    textview6.setText(Telefono[position].toString());
 
                     byte[] decodeString = Base64.decode(IMAGE[position], Base64.DEFAULT);
                     Bitmap decode = BitmapFactory.decodeByteArray(decodeString, 0, decodeString.length);

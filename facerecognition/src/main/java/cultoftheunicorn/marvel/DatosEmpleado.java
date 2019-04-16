@@ -57,7 +57,6 @@ public class DatosEmpleado extends AppCompatActivity {
         EmpleadoDAO empleado = new EmpleadoDAO(this);
         ProyectoDAO proyecto = new ProyectoDAO(this);
 
-
         //obtener listado local de usuario, empleados, fotodefault abrir bases de datos local
         mListEmpleado = empleado.getAllEmpleadoxID(Long.parseLong(IDEMPLEADO));
         mListProyecto = proyecto.getAllProyectoxID(Long.parseLong(IDPROYECT));

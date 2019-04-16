@@ -215,10 +215,20 @@ public class MainActivity2 extends AppCompatActivity {
 
             NOMBRESEMPLEADOS = "";
             NOMBRESUSUARIOS = "";
+            CODIGOEMPLEADO = "";
+            DOMICILIO = "";
+            IMSS = "";
+            CIUDAD = "";
+            TELEFONO = "";
 
             String text = "";
             String empleados = "";
             String usuarios = "";
+            String codigoempleado = "";
+            String domicilio = "";
+            String imss = "";
+            String ciudad = "";
+            String telefono = "";
 
             String foto1 = ""; String foto2 = ""; String foto3 = ""; String foto4 = ""; String foto5 = "";
             String foto6 = ""; String foto7 = ""; String foto8 = ""; String foto9 = ""; String foto10 = "";
@@ -249,6 +259,11 @@ public class MainActivity2 extends AppCompatActivity {
                         if (tagname.equalsIgnoreCase("SERVICES")) {
                             NOMBRESEMPLEADOS = empleados;
                             NOMBRESUSUARIOS = usuarios;
+                            CODIGOEMPLEADO = codigoempleado;
+                            DOMICILIO = domicilio;
+                            IMSS = imss;
+                            CIUDAD = ciudad;
+                            TELEFONO = telefono;
 
                             IMAGE1 = foto1; IMAGE11 = foto11; IMAGE21 = foto21; IMAGE31 = foto31; IMAGE41 = foto41;
                             IMAGE2 = foto2; IMAGE12 = foto12; IMAGE22 = foto22; IMAGE32 = foto32; IMAGE42 = foto42;
@@ -266,6 +281,18 @@ public class MainActivity2 extends AppCompatActivity {
                             empleados = empleados + text;
                         } else if (tagname.equalsIgnoreCase("NOMBRESUSUARIOS")) {
                             usuarios = usuarios + text;
+
+                        } else if (tagname.equalsIgnoreCase("CODIGOEMPLEADO")) {
+                            codigoempleado = codigoempleado + text;
+                        } else if (tagname.equalsIgnoreCase("DOMICILIO")) {
+                            domicilio = domicilio + text;
+                        } else if (tagname.equalsIgnoreCase("IMSS")) {
+                            imss = imss + text;
+                        } else if (tagname.equalsIgnoreCase("CIUDAD")) {
+                            ciudad = ciudad + text;
+                        } else if (tagname.equalsIgnoreCase("TELEFONO")) {
+                            telefono = telefono + text;
+
                         } else if (tagname.equalsIgnoreCase("FOTO1EMPLEADO1BASE64")) {
                             foto1 = text;
                         } else if (tagname.equalsIgnoreCase("FOTO2EMPLEADO1BASE64")) {
@@ -580,10 +607,19 @@ public class MainActivity2 extends AppCompatActivity {
                 //PROCESAR ARCHIVO XML CON LOS 5 EMPLEDOS Y SUS 10 IMAGENES-------------------------////////////////////
                 procesaXML();
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+                String[] partsnomemp= new String[0]; String[] partscodemp= new String[0]; String[] partsdomemp= new String[0];
+                String[] partsimssemp= new String[0]; String[] partsciudademp= new String[0]; String[] partstelefonoemp= new String[0];
+
+                partsnomemp = NOMBRESEMPLEADOS.split("-");
+                partscodemp = CODIGOEMPLEADO.split("-");
+                partsdomemp = DOMICILIO.split("-");
+                partsimssemp= IMSS.split("-");
+                partsciudademp= CIUDAD.split("-");
+                partstelefonoemp = TELEFONO.split("-");
                 //realizar guardado en la base de datos local del dispositivo-----------------------////////////////////
                 //IMAGENEMPLEADO1
                 if (0 < parts2.length) {
-                    Empleado createdempleado1 = empleado.createEmpleado(parts2[0].toString().replace("'",""), "", "", "", "", "", "", "", "", "", Base64.decode(IMAGE1, Base64.DEFAULT),
+                    Empleado createdempleado1 = empleado.createEmpleado(parts2[0].toString().replace("'",""), partscodemp[0], partsdomemp[0], partsciudademp[0], partstelefonoemp[0], "", "", "", partsimssemp[0], "", Base64.decode(IMAGE1, Base64.DEFAULT),
                             2601, 1, Base64.decode(IMAGE1, Base64.DEFAULT),
                             Base64.decode(IMAGE2, Base64.DEFAULT),
                             Base64.decode(IMAGE3, Base64.DEFAULT),
@@ -597,7 +633,7 @@ public class MainActivity2 extends AppCompatActivity {
                 }
                 //IMAGENEMPLEADO2
                 if (1 < parts2.length) {
-                    Empleado createdempleado2 = empleado.createEmpleado(parts2[1].toString().replace("'",""), "", "", "", "", "", "", "", "", "", Base64.decode(IMAGE1, Base64.DEFAULT),
+                    Empleado createdempleado2 = empleado.createEmpleado(parts2[1].toString().replace("'",""), partscodemp[1], partsdomemp[1], partsciudademp[1], partstelefonoemp[1], "", "", "", partsimssemp[1], "", Base64.decode(IMAGE1, Base64.DEFAULT),
                             2601, 1, Base64.decode(IMAGE11, Base64.DEFAULT),
                             Base64.decode(IMAGE12, Base64.DEFAULT),
                             Base64.decode(IMAGE13, Base64.DEFAULT),
@@ -611,7 +647,7 @@ public class MainActivity2 extends AppCompatActivity {
                 }
                 //IMAGENEMPLEADO3
                 if (2 < parts2.length) {
-                    Empleado createdempleado3 = empleado.createEmpleado(parts2[2].toString().replace("'",""), "", "", "", "", "", "", "", "", "", Base64.decode(IMAGE1, Base64.DEFAULT),
+                    Empleado createdempleado3 = empleado.createEmpleado(parts2[2].toString().replace("'",""), partscodemp[2], partsdomemp[2], partsciudademp[2], partstelefonoemp[2], "", "", "", partsimssemp[2], "", Base64.decode(IMAGE1, Base64.DEFAULT),
                             2601, 1, Base64.decode(IMAGE21, Base64.DEFAULT),
                             Base64.decode(IMAGE22, Base64.DEFAULT),
                             Base64.decode(IMAGE23, Base64.DEFAULT),
@@ -625,7 +661,7 @@ public class MainActivity2 extends AppCompatActivity {
                 }
                 //IMAGENEMPLEADO4
                 if (3 < parts2.length) {
-                    Empleado createdempleado4 = empleado.createEmpleado(parts2[3].toString().replace("'",""), "", "", "", "", "", "", "", "", "", Base64.decode(IMAGE1, Base64.DEFAULT),
+                    Empleado createdempleado4 = empleado.createEmpleado(parts2[3].toString().replace("'",""), partscodemp[3], partsdomemp[3], partsciudademp[3], partstelefonoemp[3], "", "", "", partsimssemp[3], "", Base64.decode(IMAGE1, Base64.DEFAULT),
                             2601, 1, Base64.decode(IMAGE31, Base64.DEFAULT),
                             Base64.decode(IMAGE32, Base64.DEFAULT),
                             Base64.decode(IMAGE33, Base64.DEFAULT),
@@ -639,7 +675,7 @@ public class MainActivity2 extends AppCompatActivity {
                 }
                 //IMAGENEMPLEADO5
                 if (4 < parts2.length) {
-                    Empleado createdempleado5 = empleado.createEmpleado(parts2[4].toString().replace("'",""), "", "", "", "", "", "", "", "", "", Base64.decode(IMAGE1, Base64.DEFAULT),
+                    Empleado createdempleado5 = empleado.createEmpleado(parts2[4].toString().replace("'",""), partscodemp[4], partsdomemp[4], partsciudademp[4], partstelefonoemp[4], "", "", "", partsimssemp[4], "", Base64.decode(IMAGE1, Base64.DEFAULT),
                             2601, 1, Base64.decode(IMAGE41, Base64.DEFAULT),
                             Base64.decode(IMAGE42, Base64.DEFAULT),
                             Base64.decode(IMAGE43, Base64.DEFAULT),

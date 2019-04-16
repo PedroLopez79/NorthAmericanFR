@@ -19,11 +19,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -32,8 +30,8 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -66,13 +64,8 @@ import cultoftheunicorn.marvel.dao.EmpleadoDAO;
 import cultoftheunicorn.marvel.dao.FotodefaultDAO;
 import cultoftheunicorn.marvel.modelo.Empleado;
 import cultoftheunicorn.marvel.modelo.FotoDefault;
-
 import static com.googlecode.javacv.cpp.opencv_objdetect.CV_HAAR_DO_ROUGH_SEARCH;
 import static com.googlecode.javacv.cpp.opencv_objdetect.CV_HAAR_FIND_BIGGEST_OBJECT;
-import static java.lang.Math.atan2;
-import static java.lang.StrictMath.sqrt;
-import static org.opencv.imgproc.Imgproc.getRotationMatrix2D;
-
 //import android.content.Context;
 
 public class Recognize extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
@@ -174,10 +167,10 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
 
                     try {
                         // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+                        InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
                         //mCascadeFile = new File(cascadeDir, "lbpcascade.xml");
-                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+                        mCascadeFile = new File(cascadeDir, "haarcascade_frontalface_default.xml");
 
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
@@ -856,12 +849,48 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         mRgba.release();
     }
 
+    void detectEyes(Mat frame, CascadeClassifier faceCascade, CascadeClassifier eyesCascade)
+    {
+        Mat frameGray = new Mat();
+        //Imgproc.cvtColor(frame, frameGray, Imgproc.COLOR_BGR2GRAY);
+        //Imgproc.equalizeHist(frameGray, frameGray);
+        // -- Detect faces
+        MatOfRect faces = new MatOfRect();
+        faceCascade.detectMultiScale(frameGray, faces, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+                new Size(80, 80), new Size());
+        List<Rect> listOfFaces = faces.toList();
+        for (Rect face : listOfFaces) {
+            Point center = new Point(face.x + face.width / 2, face.y + face.height / 2);
+            //Imgproc.ellipse(frame, center, new Size(face.width / 2, face.height / 2), 0, 0, 360,
+            //        new Scalar(255, 0, 255));
+            Mat faceROI = frameGray.submat(face);
+            // -- In each face, detect eyes
+            MatOfRect eyes = new MatOfRect();
+            eyesCascade.detectMultiScale(faceROI, eyes);
+            List<Rect> listOfEyes = eyes.toList();
+            for (Rect eye : listOfEyes) {
+                Point eyeCenter = new Point(face.x + eye.x + eye.width / 2, face.y + eye.y + eye.height / 2);
+                int radius = (int) Math.round((eye.width + eye.height) * 0.25);
+                Core.rectangle(frame, eye.tl(), eye.br(), new Scalar(255, 0, 0, 255), 2);
+                //Imgproc.circle(frame, eyeCenter, radius, new Scalar(255, 0, 0), 4);
+            }
+        }
+        //-- Show what you got
+        //HighGui.imshow("Capture - Face detection", frame );
+        //if ((rEye != null) && (lEye != null)) {
+        //    Core.rectangle(mRgba, rEye.tl(), rEye.br(), new Scalar(255, 0, 0, 255), 2);
+        //}
+    }
+
+
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
 
-        int flags = CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH;
+        //detectEyes(mGray, mJavaDetector, mCascadeEL);
+
+        int flags = CV_HAAR_FIND_BIGGEST_OBJECT;
 
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
@@ -893,47 +922,25 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
         if ((facesArray.length>0) && (faceState==SEARCHING)) {
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             if (faces.toArray().length == 1) {
-                rostro = faces.toArray()[0];
 
-                Mat mm = new Mat(mGray, rostro);
+                List<Rect> listOfFaces = faces.toList();
+                rostro = listOfFaces.get(0);
 
-                int leftX = (Math.round((mm.cols()) * EYE_SX));
-                int topY = (Math.round(mm.rows() * EYE_SY));
-                int widthX = Math.round(mm.cols() * EYE_SW);
-                int heightY = Math.round(mm.rows() * EYE_SH);
-                int rightX = (int) (Math.round((mm.cols()) * (1.0 - EYE_SX - EYE_SW)));
 
-                Mat topLeftOfFace = new Mat(mm, new Rect(leftX, topY, widthX, heightY));
-                Mat topRightOfFace = new Mat(mm, new Rect(rightX, topY, widthX, heightY));
+                Point center = new Point(rostro.x + rostro.width / 2, rostro.y + rostro.height / 2);
+                Mat faceROI = mGray.submat(rostro);
+                // -- In each face, detect eyes
+                MatOfRect eyes = new MatOfRect();
 
-                //vector<Rect> lEyeR, rEyeR;
-                MatOfRect lEyeR = new MatOfRect();
-                MatOfRect rEyeR = new MatOfRect();
+                mCascadeER.detectMultiScale(faceROI, eyes);
+                List<Rect> listOfEyes = eyes.toList();
 
-                mCascadeEL.detectMultiScale(topLeftOfFace, lEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(80, 80), new Size());
-                mCascadeER.detectMultiScale(topRightOfFace, rEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(80, 80), new Size());
-
-                if ((lEyeR.toArray().length == 1) && (rEyeR.toArray().length == 1)) {
-                    // Ojos de la Cara localizados
-                    lEye = lEyeR.toArray()[0];
-                    rEye = rEyeR.toArray()[0];
-
-                    lEye.x += leftX;
-                    lEye.y += topY;
-
-                    rEye.x += rightX;
-                    rEye.y += topY;
-
-                } else {
-                    lEye = null;
-                    rEye = null;
+                if (listOfEyes.size() == 2) {
+                    rEye = listOfEyes.get(0);
+                    lEye = listOfEyes.get(1);
                 }
 
                 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
                 Mat m = new Mat();
                 m = mGray.submat(facesArray[0]);
 
@@ -947,69 +954,49 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
                 //
 
                 if ((rEye != null) && (lEye != null)) {
+                    //Core.rectangle(mRgba, lEye.tl(), lEye.br(), FACE_RECT_COLOR, 3);
 
                     textTochange = fr.predict(m, lEye, rEye);
-                }
+
 
                 mLikely = fr.getProb();
                 msg = new Message();
                 msg.obj = textTochange;
                 mHandler.sendMessage(msg);
+                }
 
             }
         }
 
+        //Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
         for (int i = 0; i < facesArray.length; i++) {
-
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             if (faces.toArray().length == 1) {
-                rostro = faces.toArray()[0];
+                Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+                /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                Mat mm = new Mat(mGray, rostro);
+                /*List<Rect> listOfFaces = faces.toList();
+                for (Rect face : listOfFaces) {
+                    Point center = new Point(face.x + face.width / 2, face.y + face.height / 2);
+                    Core.ellipse(mRgba, center, new Size(face.width / 2, face.height / 2), 0, 0, 360,
+                                    new Scalar(255, 0, 255));
+                    //Imgproc.ellipse(frame, center, new Size(face.width / 2, face.height / 2), 0, 0, 360,
+                    //        new Scalar(255, 0, 255));
 
-                int leftX = (Math.round((mm.cols()) * EYE_SX));
-                int topY = (Math.round(mm.rows() * EYE_SY));
-                int widthX = Math.round(mm.cols() * EYE_SW);
-                int heightY = Math.round(mm.rows() * EYE_SH);
-                int rightX = (int) (Math.round((mm.cols()) * (1.0 - EYE_SX - EYE_SW)));
+                    Mat faceROI = mGray.submat(face);
+                    // -- In each face, detect eyes
+                    MatOfRect eyes = new MatOfRect();
 
-                Mat topLeftOfFace = new Mat(mm, new Rect(leftX, topY, widthX, heightY));
-                Mat topRightOfFace = new Mat(mm, new Rect(rightX, topY, widthX, heightY));
+                    mCascadeER.detectMultiScale(faceROI, eyes);
+                    List<Rect> listOfEyes = eyes.toList();
 
-                //vector<Rect> lEyeR, rEyeR;
-                MatOfRect lEyeR = new MatOfRect();
-                MatOfRect rEyeR = new MatOfRect();
+                    for (Rect eye : listOfEyes) {
+                        Point eyeCenter = new Point(face.x + eye.x + eye.width / 2, face.y + eye.y + eye.height / 2);
+                        int radius = (int) Math.round((eye.width + eye.height) * 0.25);
+                        //Imgproc.circle(frame, eyeCenter, radius, new Scalar(255, 0, 0), 4);
 
-                mCascadeEL.detectMultiScale(topLeftOfFace, lEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(80, 80), new Size());
-                mCascadeER.detectMultiScale(topRightOfFace, rEyeR, 1.1, 1, 0, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(80, 80), new Size());
-
-                if ((lEyeR.toArray().length == 1) && (rEyeR.toArray().length == 1)) {
-                    // Ojos de la Cara localizados
-                    lEye = lEyeR.toArray()[0];
-                    rEye = rEyeR.toArray()[0];
-
-                    lEye.x += leftX;
-                    lEye.y += topY;
-
-                    rEye.x += rightX;
-                    rEye.y += topY;
-
-                } else {
-                    lEye = null;
-                    rEye = null;
-                }
-
-
-                //Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-                Core.rectangle(mRgba, rostro.tl(), rostro.br(), FACE_RECT_COLOR, 3);
-                if (rEye != null)
-                    Core.rectangle(mRgba, rEye.tl(), rEye.br(), new Scalar(255, 0, 0, 255), 2);
-
-                if (lEye != null)
-                    Core.rectangle(mRgba, lEye.tl(), lEye.br(), new Scalar(255, 0, 0, 255), 2);
-
+                        Core.circle(mRgba, eyeCenter, radius, new Scalar(255, 0, 0), 2);
+                    }
+                }*/
             }
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
