@@ -61,8 +61,8 @@ public  class PersonRecognizer {
 
 		double dw = face.cols();
 		double dh = face.rows();
-		Point faceCenter = new Point(Math.round(dw*0.5), Math.round(dh*0.4));
-		Size size = new Size(Math.round(dw*0.4), Math.round(dh*0.75));
+		Point faceCenter = new Point(Math.round(dw*0.5), Math.round(dh*0.5));
+		Size size = new Size(Math.round(dw*0.35), Math.round(dh*0.55));
 
 		Core.ellipse( mask,
 				faceCenter,
@@ -217,9 +217,9 @@ public  class PersonRecognizer {
 		//faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(4,8,8,8,200);
 		//faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(3,8,8,8,200);
 
-		faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(2,8,8,8,200);
+		//faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(2,8,8,8,200);
 
-		//faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(1,8,8,8,200);
+		faceRecognizer =  com.googlecode.javacv.cpp.opencv_contrib.createLBPHFaceRecognizer(1,8,8,8,200);
 		//faceRecognizer = com.googlecode.javacv.cpp.opencv_contrib.createFisherFaceRecognizer();
 
 		//faceRecognizer = com.googlecode.javacv.cpp.opencv_contrib.createEigenFaceRecognizer();
@@ -377,12 +377,12 @@ public  class PersonRecognizer {
 		//cvResize(ipl, imageProcessed, CV_INTER_LINEAR);
         // Give the image a standard brightness and contrast.
 
-		cvSaveImage(mPath + "noequalizado.jpg",ipl);
+		//cvSaveImage(mPath + "noequalizado.jpg",ipl);
 
 		cvEqualizeHist(ipl, ipl);
         //------------------------------------------------------------------------------------//
 
-		cvSaveImage(mPath + "equalizado.jpg",ipl);
+		//cvSaveImage(mPath + "equalizado.jpg",ipl);
 
 		faceRecognizer.predict(ipl, n, p);
 		//faceRecognizer.predict(ipl, n, p);
@@ -393,7 +393,7 @@ public  class PersonRecognizer {
 			mProb=-1;
 		//if ((n[0] != -1)&&(p[0]<50))
 
-		if ((n[0] != -1)&&(p[0]<=50))
+		if ((n[0] != -1)&&(p[0]<=25))
 		//if (n[0] != -1)
 			return labelsFile.get(n[0]) + String.valueOf(p[0]) + "->" + String.valueOf(n[0]);
 		else

@@ -29,10 +29,12 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.cultoftheunicorn.marvel.R;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.ByteArrayOutputStream;
@@ -55,6 +57,10 @@ import org.ksoap2.transport.HttpTransportSE;
 import cultoftheunicorn.marvel.dao.EmpleadoDAO;
 import cultoftheunicorn.marvel.modelo.Empleado;
 
+import static com.googlecode.javacv.cpp.opencv_core.CV_8U;
+import static com.googlecode.javacv.cpp.opencv_core.CV_8UC1;
+import static org.opencv.imgproc.Imgproc.warpAffine;
+
 public class Training extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
@@ -73,8 +79,14 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
 
     private Mat                    mRgba;
     private Mat                    mGray;
-    private File mCascadeFile;
-    private CascadeClassifier mJavaDetector;
+
+    private File mCascadeFile, mCascadeFileER, mCascadeFileEL;
+    private CascadeClassifier mJavaDetector, mCascadeER, mCascadeEL;
+
+    // rectangulos donde estan los ojos y cara
+    private Rect rostro = null;
+    private Rect lEye = null;
+    private Rect rEye = null;
 
     private int                    mDetectorType       = JAVA_DETECTOR;
     private String[]               mDetectorName;
@@ -82,6 +94,9 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
     private int mLikely=999;
+
+    private double DESIRED_LEFT_EYE_Y = 0.14;
+    private double DESIRED_LEFT_EYE_X = 0.16;
 
     String mPath="";
 
@@ -121,6 +136,171 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
         System.loadLibrary("opencv_java");
     }
 
+    private Mat ElipticalMask(Mat face)
+    {
+        Mat mask = new Mat(face.rows(), face.cols(), CV_8UC1, Scalar.all(0));
+
+        double dw = face.cols();
+        double dh = face.rows();
+        Point faceCenter = new Point(Math.round(dw*0.5), Math.round(dh*0.5));
+        Size size = new Size(Math.round(dw*0.35), Math.round(dh*0.55));
+
+        Core.ellipse( mask,
+                faceCenter,
+                size,
+                0,
+                0.0,
+                360.0,
+                new Scalar( 255, 255, 255 ),
+                -1,
+                8,
+                0 );
+
+        Mat cropped = new Mat(face.rows(), face.cols(), CV_8UC1, Scalar.all(0));
+
+        face.copyTo( cropped, mask );
+
+        return cropped;
+    }
+
+    private Mat histogramequalization(Mat face)
+    {
+        int w = face.cols();
+        int h = face.rows();
+        Mat wholeFace = new Mat();
+        //cvEqualizeHist(face, wholeFace);
+        Imgproc.equalizeHist(face, wholeFace);
+        int midX = w/2;
+
+        Rect RectCrop1 = new Rect(0, 0, midX, h);
+        Mat leftSide = new Mat(face, RectCrop1);
+        Rect RectCrop2 = new Rect(midX, 0, w-midX,h);
+        Mat rightSide= new Mat(face, RectCrop2);
+        //cvEquilizeHist(leftSide, leftSide);
+        //cvEquilizeHist(rightSide, rightSide);
+        Imgproc.equalizeHist(leftSide, leftSide);
+        Imgproc.equalizeHist(rightSide, rightSide);
+
+
+        for (int y =0; y <h; y++)
+        {
+            for (int x=0; x<w; x++)
+            {
+                double v =  0;
+                if (x < w/4) {
+                    //LEFT 25%: just use the left face.
+                    //v = leftSide.at<uchar>(y,x);
+                    v = leftSide.get(y,x)[0];
+                }
+                else if (x< w*2/4){
+                    //Mide-left 25%: blend the left face & whole face.
+                    //int lv = leftSide.at<uchar>(y,x);
+                    double lv = leftSide.get(y,x)[0];
+                    //int wv = wholeFace.at<uchar>(y,x);
+                    double wv = wholeFace.get(y,x)[0];
+
+                    //Blend more of the whole face as it moves
+                    //further right along the face.
+                    float f = (x - w*1/4) / (float) (w/4);
+                    v = Math.round((1.0f - f) * lv + (f) * wv);
+                }
+                else if (x < w*3/4) {
+                    //Mid-right 25%: blend right face & whole face.
+                    //int rv = rightSide.at<uchar>(y,x-midX);
+                    double rv = rightSide.get(y,x-midX)[0];
+                    //int wv = wholeFace.at<uchar>(y,x);
+                    double wv = wholeFace.get(y,x)[0];
+
+                    //Blend more of the right-side face as it moves
+                    //further right along the face.
+                    float f = (x-w*2/4)/(float)(w/4);
+                    v = Math.round((1.0f - f) * wv + (f) *rv);
+                }
+                else {
+                    // Right 25%: just use the right face.
+                    //v = rightSide.at<uchar>(y,x-midX);
+                    v = rightSide.get(y,x-midX)[0];
+                }
+                //face.at<uchar>(y,x) = v;
+                face.put(y,x,v);
+            }
+        }
+
+        Mat warped = new Mat(100, 100, CV_8U, new Scalar(128));
+
+        Mat filtered = new Mat(warped.size(), CV_8U);
+        Imgproc.bilateralFilter(face, filtered, 0, 20.0, 2.0);
+
+        return filtered;
+    }
+
+    private Mat AlignFace(Mat face, Mat warped, Rect leftEye, Rect rightEye)
+    //private Mat GeometricalTransformation(Mat face, Mat warped, Point leftEye, Point rightEye)
+    {
+        Point left = new Point(leftEye.x + leftEye.width/2, leftEye.y + leftEye.height/2);
+        Point right= new Point(rightEye.x + rightEye.width/2, rightEye.y + rightEye.height/2);
+        //Point left = leftEye;
+        //Point right = rightEye;
+        Point eyesCenter = new Point((left.x + right.x)*0.5f, (left.y + right.y)*0.5f);
+
+        //obtener el angulo entr los dos ojos
+        double dy = (right.y - left.y);
+        double dx = (right.x - left.x);
+        double len = Math.sqrt(dx*dx + dy*dy);
+        //double angle = Math.atan2(dy,dx)*180.0/Math.PI;
+        double angle = Math.atan2(dy,dx)*180/Math.PI;
+
+
+        //--------------------------------------------------------------Calculate size of new matrix
+        double radians = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(radians));
+        double cos = Math.abs(Math.cos(radians));
+        int newWidth = (int) (face.width() * cos + face.height() * sin);
+        int newHeight = (int) (face.width() * sin + face.height() * cos);
+
+        // rotating image
+        //Point center = new Point(newWidth / 2, newHeight / 2);
+        //Mat rotMatrix = Imgproc.getRotationMatrix2D(center, angle, 1.0); //1.0 means 100 % scale
+        //Size size = new Size(newWidth, newHeight);
+        //Imgproc.warpAffine(face, face, rotMatrix, face.size());
+        //return face;
+        //------------------------------------------------------------------------------------------
+
+        //Mediciones manuales sugieren que el centro del ojo izquierdo idealmente
+        //deberia estar a 0.19, 0.14 de una imagen de la cara escalada.
+        double DESIRED_RIGHT_EYE_X = (1.0f - DESIRED_LEFT_EYE_X);
+
+        //Obtener cantidad para escalar la imagen para que sea el tamaño fijo deseado
+        //double desiredLen = (DESIRED_RIGHT_EYE_X - DESIRED_LEFT_EYE_X) * FaceWidth;
+        double desiredLen = (DESIRED_RIGHT_EYE_X - DESIRED_LEFT_EYE_X) / len;
+        long scale = Math.round(desiredLen / len);
+
+        //Obtener la matriz de transformacion para girar y escalar la cara al angulo y tamaño calculado
+        //Mat rot_mat = getRotationMatrix2D(eyesCenter, angle, scale);
+        Mat rotMatrix;
+        if (angle < 100)
+        {
+            rotMatrix = Imgproc.getRotationMatrix2D(eyesCenter, angle, 1); //1.0 means 100 % scale
+        }
+        else {
+            rotMatrix = Imgproc.getRotationMatrix2D(eyesCenter, angle + 180, 1); //1.0 means 100 % scale
+        };
+
+        //Cambie el centro de los ojos para que sea el centro deseado entre los ojos.
+        //rot_mat.at<double>(0,2) += FaceWidth * 0.5f - eyesCenter.x;
+        rotMatrix.get(0,2)[0] = rotMatrix.get(0,2)[0] + (100 * 0.5f - eyesCenter.x);
+        rotMatrix.put(0,2, rotMatrix.get(0,2));
+
+        //rot_mat.at<double>(1,2) += FaceHeight * DESIRED_LEFT_EYE_Y - eyeCenter.y
+        rotMatrix.get(1,2)[0] = rotMatrix.get(1,2)[0] + 100 * DESIRED_LEFT_EYE_Y - eyesCenter.y;
+        rotMatrix.put(1,2, rotMatrix.get(1,2));
+
+        warped = new Mat(100, 100, CV_8U, new Scalar(128));
+        warpAffine(face, warped, rotMatrix, face.size());
+
+        return warped;
+    }
+
     public Training() {
         mDetectorName = new String[2];
         mDetectorName[JAVA_DETECTOR] = "Java";
@@ -144,9 +324,9 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
 
                     try {
                         // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+                        InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade.xml");
+                        mCascadeFile = new File(cascadeDir, "haarcascade_frontalface_default.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];
@@ -157,14 +337,51 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
                         is.close();
                         os.close();
 
+//--------------------------------------------------------------------------------------------------------------------------
+                        // --------------------------------- load left eye classificator -----------------------------------
+                        InputStream iser = getResources().openRawResource(R.raw.haarcascade_righteye_2splits);
+                        File cascadeDirER = getDir("cascadeER", Context.MODE_PRIVATE);
+                        mCascadeFileER = new File(cascadeDirER, "haarcascade_righteye_2splits.xml");
+
+                        FileOutputStream oser = new FileOutputStream(mCascadeFileER);
+
+                        byte[] bufferER = new byte[4096];
+                        int bytesReadER;
+                        while ((bytesReadER = iser.read(bufferER)) != -1) {
+                            oser.write(bufferER, 0, bytesReadER);
+                        }
+                        iser.close();
+                        oser.close();
+//----------------------------------------------------------------------------------------------------
+// --------------------------------- load right eye classificator ------------------------------------
+                        InputStream isel = getResources().openRawResource(R.raw.haarcascade_lefteye_2splits);
+                        File cascadeDirEL = getDir("cascadeEL", Context.MODE_PRIVATE);
+                        mCascadeFileEL = new File(cascadeDirEL, "haarcascade_lefteye_2splits.xml");
+
+                        FileOutputStream osel = new FileOutputStream(mCascadeFileEL);
+
+                        byte[] bufferEL = new byte[4096];
+                        int bytesReadEL;
+                        while ((bytesReadEL = isel.read(bufferEL)) != -1) {
+                            osel.write(bufferEL, 0, bytesReadEL);
+                        }
+                        isel.close();
+                        osel.close();
+// ------------------------------------------------------------------------------------------------------
                         mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-                        if (mJavaDetector.empty()) {
+                        /**/    mCascadeER = new CascadeClassifier(mCascadeFileER.getAbsolutePath());
+                        /**/    mCascadeEL = new CascadeClassifier(mCascadeFileEL.getAbsolutePath());
+                        if (mJavaDetector.empty()|| mCascadeER.empty() || mCascadeEL.empty()) {
                             Log.e(TAG, "Failed to load cascade classifier");
                             mJavaDetector = null;
+                            /**/        mCascadeER = null;
+                            mCascadeEL = null;
                         } else
                             Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
 
                         cascadeDir.delete();
+                        /**/    cascadeDirER.delete();
+                        /**/    cascadeDirEL.delete();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -654,11 +871,41 @@ public class Training extends AppCompatActivity implements CameraBridgeViewBase.
 
         if ((facesArray.length==1)&&(faceState==TRAINING)&&(countImages<MAXIMG)&&(!text.equals("")))
         {
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            if (faces.toArray().length == 1) {
+
+                List<Rect> listOfFaces = faces.toList();
+                rostro = listOfFaces.get(0);
+
+                Point center = new Point(rostro.x + rostro.width / 2, rostro.y + rostro.height / 2);
+                Mat faceROI = mGray.submat(rostro);
+                // -- In each face, detect eyes
+                MatOfRect eyes = new MatOfRect();
+
+                mCascadeER.detectMultiScale(faceROI, eyes);
+                List<Rect> listOfEyes = eyes.toList();
+
+                if (listOfEyes.size() == 2) {
+                    rEye = listOfEyes.get(0);
+                    lEye = listOfEyes.get(1);
+                }
+            }
+
             Mat m;
             Rect r=facesArray[0];
-
-
             m=mRgba.submat(r);
+
+            /*GEOMETRICAL TRANFORMATION*/
+            m = AlignFace(m, m, lEye, rEye);
+            //m = histogramequalization(m);
+            m = ElipticalMask(m);
+            /////////////////////////////
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            //Mat m;
+            //Rect r=facesArray[0];
+            //m=mRgba.submat(r);
+
             mBitmap = Bitmap.createBitmap(m.width(),m.height(), Bitmap.Config.ARGB_8888);
 
             //----LIMPIAR ARREGLO DE BITMAPS------------------------------------------------------//

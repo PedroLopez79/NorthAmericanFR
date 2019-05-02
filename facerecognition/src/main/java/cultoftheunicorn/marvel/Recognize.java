@@ -167,10 +167,10 @@ public class Recognize extends AppCompatActivity implements CameraBridgeViewBase
 
                     try {
                         // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+                        InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_alt);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
                         //mCascadeFile = new File(cascadeDir, "lbpcascade.xml");
-                        mCascadeFile = new File(cascadeDir, "haarcascade_frontalface_default.xml");
+                        mCascadeFile = new File(cascadeDir, "haarcascade_frontalface_alt.xml");
 
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
